@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import DailyUsageSummaryEmail from "@/emails/daily-usage-summary";
@@ -8,22 +7,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai/provider";
 import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
-
-const CRON_SECRET = process.env.CRON_SECRET;
-
-function assertCronAuthorized(request: Request): NextResponse | null {
-	if (!CRON_SECRET) {
-		return null;
-	}
-
-	const authHeader = request.headers.get("authorization") || "";
-	const expected = `Bearer ${CRON_SECRET}`;
-	if (authHeader !== expected) {
-		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-	}
-
-	return null;
-}
+import { assertCronAuthorized } from "@/lib/webhooks/cron-auth";
 
 export async function GET(request: Request) {
 	const unauthorizedResponse = assertCronAuthorized(request);

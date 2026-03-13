@@ -8,7 +8,6 @@ import { APP_URL } from "@/lib/config/app-url";
 
 // Request schema
 const SendDemoEmailBody = t.Object({
-	apiKey: t.String({ description: "User's API key for sending" }),
 	to: t.String({ description: "Recipient email address" }),
 });
 

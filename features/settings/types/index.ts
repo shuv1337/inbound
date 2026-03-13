@@ -1,8 +1,3 @@
-import { Customer } from 'autumn-js'
-
-// Re-export Customer type from Autumn
-export type { Customer } from 'autumn-js'
-
 // Domain stats response type
 export interface DomainStatsResponse {
   totalDomains: number

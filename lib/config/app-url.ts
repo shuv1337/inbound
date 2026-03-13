@@ -7,10 +7,6 @@ export const API_BASE_URL = `${APP_URL}/api`;
 
 export const DOCS_URL = process.env.DOCS_URL || `${APP_URL}/docs`;
 
-export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "";
-
-export const LEGAL_EMAIL = process.env.LEGAL_EMAIL || "";
-
 const appHostname = new URL(APP_URL).hostname;
 
 export const PASSKEY_RP_ID = appHostname;
@@ -26,3 +22,8 @@ function extractDomain(hostname: string): string {
 }
 
 export const NOTIFICATION_DOMAIN = extractDomain(appHostname);
+
+export const SUPPORT_EMAIL =
+	process.env.SUPPORT_EMAIL || `support@${NOTIFICATION_DOMAIN}`;
+
+export const LEGAL_EMAIL = process.env.LEGAL_EMAIL || "";

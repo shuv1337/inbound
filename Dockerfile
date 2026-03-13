@@ -19,11 +19,11 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/app/changelog/entries ./app/changelog/entries
-COPY --from=builder /app/content/blog/images ./content/blog/images
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/app/changelog/entries ./app/changelog/entries
+COPY --from=builder --chown=nextjs:nodejs /app/content/blog/images ./content/blog/images
 
 USER nextjs
 

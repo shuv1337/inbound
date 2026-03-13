@@ -119,7 +119,6 @@ export default function OnboardingPage() {
 
 		try {
 			const { data, error } = await client.api.e2.onboarding.demo.post({
-				apiKey: apiKeyPlain,
 				to: demoEmail,
 			});
 

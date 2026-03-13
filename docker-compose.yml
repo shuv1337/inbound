@@ -31,8 +31,8 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:2026.2.1
     command: tunnel --config /etc/cloudflared/config.yml run
-    environment:
-      TUNNEL_URL: http://app:3000
+    # TUNNEL_URL is not used when cloudflared runs in --config mode.
+    # The tunnel ingress is defined in /etc/cloudflared/config.yml instead.
     volumes:
       - /opt/inbound/cloudflared:/etc/cloudflared:ro
     depends_on:

@@ -22,7 +22,7 @@ export interface WarmupCheckResult {
 
 /**
  * Warmup period configuration
- * After this many days, normal rate limits apply (via Autumn billing)
+ * After this many days, normal rate limits apply
  */
 const WARMUP_PERIOD_DAYS = 14
 
