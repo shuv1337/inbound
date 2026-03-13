@@ -4,6 +4,7 @@ import LimitReachedEmail from "@/emails/limit-reached";
 import ReputationAlertEmail from "@/emails/reputation-alert";
 import { getInboundClient } from "@/lib/inbound-client";
 import { redis } from "@/lib/redis";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 
 export interface DomainVerificationNotificationData {
 	userEmail: string;
@@ -80,12 +81,10 @@ export async function sendDomainVerificationNotification(
 
 		// Determine the from address
 		// Use a verified domain if available, otherwise use the default
-		const fromEmail = "notifications@inbound.new";
+		const fromEmail = `notifications@${NOTIFICATION_DOMAIN}`;
 
-		// Format sender with name - Resend accepts "Name <email@domain.com>" format
 		const fromWithName = `inbound support <${fromEmail}>`;
 
-		// Send the email
 		const response = await getInboundClient().emails.send({
 			from: fromWithName,
 			to: data.userEmail,
@@ -267,7 +266,7 @@ export async function sendReputationAlertNotification(
 		const subject = `${alertEmoji} ${data.severity.toUpperCase()}: ${metricName} Alert (${percentageDisplay}) - ${data.tenantName}`;
 
 		// Determine the from address
-		const fromEmail = "alerts@inbound.new";
+		const fromEmail = `alerts@${NOTIFICATION_DOMAIN}`;
 		const fromWithName = `Inbound Security <${fromEmail}>`;
 
 		// Send the email
@@ -440,8 +439,7 @@ export async function sendLimitReachedNotification(
 
 		const subject = `⚠️ ${limitName} Limit Reached - Action Required`;
 
-		// Determine the from address
-		const fromEmail = "notifications@inbound.new";
+		const fromEmail = `notifications@${NOTIFICATION_DOMAIN}`;
 		const fromWithName = `inbound alerts <${fromEmail}>`;
 
 		// Send the email

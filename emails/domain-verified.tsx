@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL } from "@/lib/config/app-url";
 
 interface DomainVerifiedEmailProps {
   userFirstname?: string;
@@ -35,7 +36,7 @@ export const DomainVerifiedEmail = ({
 
           <Text className="my-6">
             <Link
-              href="https://inbound.new/dashboard"
+              href={`${APP_URL}/dashboard`}
               className="text-violet-600 underline"
             >
               Open Dashboard →
@@ -44,11 +45,11 @@ export const DomainVerifiedEmail = ({
 
           <Text className="text-base leading-7">
             Visit your{" "}
-            <Link href="https://inbound.new/dashboard" className="text-violet-600 underline">
+            <Link href={`${APP_URL}/dashboard`} className="text-violet-600 underline">
               dashboard
             </Link>{" "}
             or read the{" "}
-            <Link href="https://docs.inbound.new" className="text-violet-600 underline">
+            <Link href={DOCS_URL} className="text-violet-600 underline">
               docs
             </Link>{" "}
             to get started. Reply to this email if you have any questions.

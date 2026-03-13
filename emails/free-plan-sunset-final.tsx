@@ -8,6 +8,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { APP_URL } from "@/lib/config/app-url";
 
 interface FreePlanSunsetFinalEmailProps {
 	userFirstname?: string;
@@ -37,7 +38,7 @@ export const FreePlanSunsetFinalEmail = ({
 					<Text className="text-base leading-7">
 						Since we{" "}
 						<Link
-							href="https://inbound.new/blog/inbound-is-retiring-the-free-plan?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_final"
+							href={`${APP_URL}/blog/inbound-is-retiring-the-free-plan?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_final`}
 							className="text-violet-600 underline"
 						>
 							retired the free plan
@@ -70,7 +71,7 @@ export const FreePlanSunsetFinalEmail = ({
 
 					<Text className="my-6">
 						<Link
-							href="https://inbound.new/settings/billing?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_final"
+							href={`${APP_URL}/settings/billing?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_final`}
 							className="text-violet-600 underline"
 						>
 							Upgrade My Account — $4/month
@@ -85,7 +86,7 @@ export const FreePlanSunsetFinalEmail = ({
 
 					<Text className="mt-6 text-xs text-neutral-400">
 						<Link
-							href="https://inbound.new/unsubscribe"
+							href={`${APP_URL}/unsubscribe`}
 							className="text-neutral-400 underline"
 						>
 							Unsubscribe

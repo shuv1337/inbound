@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/db";
 import { onboardingDemoEmails } from "@/lib/db/schema";
+import { APP_URL } from "@/lib/config/app-url";
 
 // Request schema
 const SendDemoEmailBody = t.Object({
@@ -69,7 +70,7 @@ export const sendOnboardingDemo = new Elysia().post(
             </p>
             <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 24px 0;" />
             <p style="color: #888; font-size: 14px;">
-              This email was sent from <a href="https://inbound.new" style="color: #0066cc;">Inbound</a>
+              This email was sent from <a href="${APP_URL}" style="color: #0066cc;">Inbound</a>
             </p>
           </div>
         `,

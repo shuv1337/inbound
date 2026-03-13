@@ -4,6 +4,7 @@ import { user } from "@/lib/db/auth-schema"
 import { db } from "@/lib/db"
 import { sentEmails } from "@/lib/db/schema"
 import { redis } from "@/lib/redis"
+import { APP_URL } from "@/lib/config/app-url"
 
 const SLACK_ADMIN_WEBHOOK_URL = process.env.SLACK_ADMIN_WEBHOOK_URL
 
@@ -312,7 +313,7 @@ async function sendSpikeAlert(params: {
 								text: "View in Admin",
 								emoji: true,
 							},
-							url: "https://inbound.new/admin",
+							url: `${APP_URL}/admin`,
 							action_id: "view_admin",
 						},
 					],

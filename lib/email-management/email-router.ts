@@ -788,7 +788,7 @@ async function handleWebhookEndpoint(
 		const parsedEmailData = reconstructParsedEmailData(emailData);
 
 		// Get the base URL for attachment downloads (from environment or construct from request)
-		const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://inbound.new";
+		const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 		// Add download URLs to attachments in parsedData
 		const attachmentsWithUrls =
@@ -1251,7 +1251,6 @@ async function handleEmailForwardEndpoint(
 		let toAddresses: string[] =
 			endpoint.type === "email_group" ? config.emails : [config.forwardTo];
 
-		// Use the original recipient as the from address (e.g., ryan@inbound.new)
 		const fromAddress = config.fromAddress || emailData.recipient;
 
 		// 🚫 BLOCKLIST CHECK: Prevent forwarding to addresses that previously bounced

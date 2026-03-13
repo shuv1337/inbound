@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL } from "@/lib/config/app-url";
 
 interface CheckinMonth1EmailProps {
   userFirstname?: string;
@@ -38,7 +39,7 @@ export const CheckinMonth1Email = ({
           </Text>
           <Text className="my-6">
             <Link
-              href="https://inbound.new/logs"
+              href={`${APP_URL}/logs`}
               className="text-violet-600 underline"
             >
               Review your setup →

@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import DnsSetupInstructionsEmail from "@/emails/dns-setup-instructions";
 import { getInboundClient } from "@/lib/inbound-client";
+import { NOTIFICATION_DOMAIN, SUPPORT_EMAIL } from "@/lib/config/app-url";
 
 const inbound = getInboundClient();
 
@@ -97,7 +98,7 @@ export async function sendDnsSetupInstructions(
     const html = await render(DnsSetupInstructionsEmail(templateProps));
 
     // Determine the from address
-    const fromEmail = 'setup@inbound.new';
+    const fromEmail = `setup@${NOTIFICATION_DOMAIN}`;
     
     // Format sender with name - Inbound accepts "Name <email@domain.com>" format
     const fromWithName = `inbound DNS Setup <${fromEmail}>`;
@@ -106,7 +107,7 @@ export async function sendDnsSetupInstructions(
     const response = await inbound.emails.send({
       from: fromWithName,
       to: data.recipientEmail.trim(),
-      reply_to: session.user.email || "support@inbound.new",
+      reply_to: session.user.email || SUPPORT_EMAIL,
       subject: `DNS Setup Instructions for ${data.domain} - inbound`,
       html: html,
       tags: [

@@ -6,6 +6,7 @@ import {
 	processSESEvent,
 	type RateAlert,
 } from "@/lib/ses-monitoring/rate-tracker";
+import { APP_URL } from "@/lib/config/app-url";
 
 // Slack webhook for admin notifications
 const SLACK_ADMIN_WEBHOOK_URL = process.env.SLACK_ADMIN_WEBHOOK_URL;
@@ -515,7 +516,7 @@ async function sendSlackAdminNotification(data: {
 					elements: [
 						{
 							type: "mrkdwn",
-							text: `View in <https://inbound.new/admin/tenants|Admin Dashboard>`,
+							text: `View in <${APP_URL}/admin/tenants|Admin Dashboard>`,
 						},
 					],
 				},

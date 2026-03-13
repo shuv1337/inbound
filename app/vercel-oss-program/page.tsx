@@ -8,6 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/lib/auth/auth-client";
+
+const APP_HOST = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").hostname;
+  } catch {
+    return "localhost";
+  }
+})();
+const supportEmail = `support@${APP_HOST.split(".").slice(-2).join(".")}`;
 import { toast } from "sonner";
 import { submitVercelOssApplication } from "./actions";
 import InboundIcon from "@/components/icons/inbound";
@@ -87,7 +96,7 @@ function VercelOssProgramContent() {
             <div className="hidden md:flex items-center gap-4 text-sm lg:text-base text-muted-foreground">
               <a href="/docs" className="hover:text-foreground transition-colors">docs</a>
               <a href="/#pricing" className="hover:text-foreground transition-colors">pricing</a>
-              <a href="mailto:support@inbound.new" className="hover:text-foreground transition-colors">help</a>
+              <a href={`mailto:${supportEmail}`} className="hover:text-foreground transition-colors">help</a>
             </div>
             {session?.user ? (
               <Button size="default" className="text-sm sm:text-base" asChild>

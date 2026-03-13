@@ -6,6 +6,7 @@ import { getInboundClient } from "@/lib/inbound-client";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai/provider";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 
 // Vercel cron/webhook route. Secure by shared secret header if set.
 export async function GET() {
@@ -112,7 +113,7 @@ export async function GET() {
 	const inbound = getInboundClient();
 	const toEmail = process.env.USAGE_REPORT_TO || "ryan@inboundemail.com";
 	await inbound.emails.send({
-		from: "inbound reports <notifications@inbound.new>",
+		from: `inbound reports <notifications@${NOTIFICATION_DOMAIN}>`,
 		to: toEmail,
 		subject: `Daily usage • ${now.toLocaleDateString("en-US")}`,
 		html,

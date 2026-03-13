@@ -40,10 +40,11 @@ import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { sesTenants } from "@/lib/db/schema";
 
-// Webhook URL for receiving SES events
+import { API_BASE_URL } from "@/lib/config/app-url";
+
 const WEBHOOK_URL =
 	process.env.SES_WEBHOOK_URL ||
-	"https://inbound.new/api/inbound/health/tenant";
+	`${API_BASE_URL}/inbound/health/tenant`;
 const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID;
 
 // Types

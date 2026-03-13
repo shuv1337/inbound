@@ -10,6 +10,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL } from "@/lib/config/app-url";
 
 interface DnsRecord {
   type: "TXT" | "MX" | string;
@@ -88,7 +89,7 @@ export const DnsSetupInstructionsEmail = ({
 
           <Text className="my-6">
             <Link
-              href="https://inbound.new/emails"
+              href={`${APP_URL}/emails`}
               className="text-violet-600 underline"
             >
               View Setup Progress →
@@ -97,7 +98,7 @@ export const DnsSetupInstructionsEmail = ({
 
           <Text className="text-base leading-7">
             Once you've added these records, verification will happen automatically. Need help with {provider}? See our{" "}
-            <Link href="https://docs.inbound.new/" className="text-violet-600 underline">
+            <Link href={DOCS_URL} className="text-violet-600 underline">
               DNS setup guides
             </Link>{" "}
             or reply to this email.

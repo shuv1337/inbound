@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL, SUPPORT_EMAIL } from "@/lib/config/app-url";
 
 interface LimitReachedEmailProps {
   userFirstname?: string;
@@ -79,18 +80,18 @@ export const LimitReachedEmail = ({
             <Text className="m-0 text-sm leading-6">- Review email routing rules to optimize usage</Text>
 
             <Text className="my-6">
-              <Link href="https://inbound.new/settings" className="text-violet-600 underline">
+              <Link href={`${APP_URL}/settings`} className="text-violet-600 underline">
                 Upgrade Your Plan →
               </Link>
             </Text>
 
             <Text className="text-base leading-7">
               Need help? Check our{" "}
-              <Link href="https://inbound.new/docs/pricing" className="text-violet-600 underline">
+              <Link href={`${DOCS_URL}/pricing`} className="text-violet-600 underline">
                 pricing guide
               </Link>{" "}
               or contact{" "}
-              <Link href="mailto:support@inbound.new" className="text-violet-600 underline">
+              <Link href={`mailto:${SUPPORT_EMAIL}`} className="text-violet-600 underline">
                 support
               </Link>
               .

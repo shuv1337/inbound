@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL } from "@/lib/config/app-url";
 
 interface CheckinWeek1EmailProps {
   userFirstname?: string;
@@ -35,7 +36,7 @@ export const CheckinWeek1Email = ({
           <Text className="m-0 mb-4 text-base leading-7">- Enable replies API to respond from threads</Text>
           <Text className="my-6">
             <Link
-              href="https://inbound.new/dashboard"
+              href={`${APP_URL}/dashboard`}
               className="text-violet-600 underline"
             >
               Open Dashboard →
@@ -43,7 +44,7 @@ export const CheckinWeek1Email = ({
           </Text>
           <Text className="text-base leading-7">
             Questions? Reply to this email or browse the{" "}
-            <Link href="https://docs.inbound.new" className="text-violet-600 underline">
+            <Link href={DOCS_URL} className="text-violet-600 underline">
               docs
             </Link>.
           </Text>

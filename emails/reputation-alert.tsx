@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL, SUPPORT_EMAIL } from "@/lib/config/app-url";
 
 interface ReputationAlertEmailProps {
   userFirstname?: string;
@@ -91,14 +92,14 @@ export const ReputationAlertEmail = ({
             ))}
 
             <Text className="my-6">
-              <Link href="https://inbound.new/dashboard/reputation" className="text-violet-600 underline">
+              <Link href={`${APP_URL}/dashboard/reputation`} className="text-violet-600 underline">
                 View Reputation Dashboard →
               </Link>
             </Text>
 
             <Text className="text-sm leading-6 text-neutral-600">
               {sendingPaused
-                ? "Your email sending has been paused. Contact support@inbound.new to discuss resuming service."
+                ? `Your email sending has been paused. Contact ${SUPPORT_EMAIL || "support"} to discuss resuming service.`
                 : severity === "critical"
                   ? "Critical: Email sending will be paused if rates do not improve. Take immediate action."
                   : "Warning: Monitor your reputation closely. Continued high rates may trigger restrictions."}
@@ -106,11 +107,11 @@ export const ReputationAlertEmail = ({
 
             <Text className="text-base leading-7">
               Need help? Read our{" "}
-              <Link href="https://inbound.new/docs/reputation" className="text-violet-600 underline">
+              <Link href={`${DOCS_URL}/reputation`} className="text-violet-600 underline">
                 reputation guide
               </Link>{" "}
               or contact{" "}
-              <Link href="https://inbound.new/support" className="text-violet-600 underline">
+              <Link href={`${APP_URL}/support`} className="text-violet-600 underline">
                 support
               </Link>
               .

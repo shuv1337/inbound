@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL } from "@/lib/config/app-url";
 
 interface TopUserRow {
   userEmail: string;
@@ -77,7 +78,7 @@ export const DailyUsageSummaryEmail = ({
 
           <Text className="my-6">
             <Link
-              href="https://inbound.new/admin/user-information"
+              href={`${APP_URL}/admin/user-information`}
               className="text-violet-600 underline"
             >
               Open Dashboard →

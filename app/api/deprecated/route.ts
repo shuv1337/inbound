@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DOCS_URL } from "@/lib/config/app-url";
 
 const deprecatedResponse = () =>
 	NextResponse.json(
@@ -7,7 +8,7 @@ const deprecatedResponse = () =>
 			message:
 				"This API version and the @inboundemail/sdk package are deprecated due to security concerns. Please migrate to the official 'inboundemail' package (npm install inboundemail) and use the /api/e2 routes.",
 			statusCode: 410,
-			documentation: "https://inbound.new/docs",
+			documentation: DOCS_URL,
 			migration_guide: {
 				old_sdk: "@inboundemail/sdk (deprecated)",
 				new_sdk: "inboundemail",

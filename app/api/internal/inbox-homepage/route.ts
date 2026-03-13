@@ -4,7 +4,7 @@ import type { InboundWebhookPayload } from "@/lib/types/inbound-webhooks"
 /**
  * Inbound webhook handler for the homepage inbox demo
  * 
- * This endpoint receives emails sent to *@inbox.inbound.new addresses
+ * This endpoint receives emails sent to *@inbox.<domain> addresses
  * and broadcasts them to the corresponding realtime channel so the
  * homepage can display incoming emails in real-time.
  */
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   try {
     const payload: InboundWebhookPayload = await request.json()
 
-    // Extract the local part of the recipient email (e.g., "word" from "word@inbox.inbound.new")
+    // Extract the local part of the recipient email (e.g., "word" from "word@inbox.<domain>")
     const recipient = payload.email.recipient || ""
     const localPart = recipient.split("@")[0]
 

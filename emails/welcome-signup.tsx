@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL, DOCS_URL } from "@/lib/config/app-url";
 
 interface WelcomeSignupEmailProps {
   userFirstname?: string;
@@ -32,14 +33,14 @@ export const WelcomeSignupEmail = ({
           <Text className="m-0 text-sm leading-6">3. Send a test email and inspect structured JSON</Text>
 
           <Text className="my-6">
-            <Link href="https://inbound.new/logs" className="text-violet-600 underline">
+            <Link href={`${APP_URL}/logs`} className="text-violet-600 underline">
               Open Dashboard →
             </Link>
           </Text>
 
           <Text className="text-base leading-7">
             Prefer code? Jump to the{" "}
-            <Link href="https://docs.inbound.new" className="text-violet-600 underline">
+            <Link href={DOCS_URL} className="text-violet-600 underline">
               docs
             </Link>
             .

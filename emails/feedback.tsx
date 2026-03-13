@@ -8,6 +8,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
+import { APP_URL } from "@/lib/config/app-url";
 
 interface FeedbackEmailProps {
   userFirstname?: string;
@@ -45,7 +46,7 @@ export const FeedbackEmail = ({
 
           <Text className="my-6">
             <Link
-              href="https://inbound.new/logs"
+              href={`${APP_URL}/logs`}
               className="text-violet-600 underline"
             >
               View Dashboard →

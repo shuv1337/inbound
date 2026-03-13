@@ -8,6 +8,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { APP_URL, SUPPORT_EMAIL } from "@/lib/config/app-url";
 
 interface FreePlanSunsetNoticeEmailProps {
 	userFirstname?: string;
@@ -35,7 +36,7 @@ export const FreePlanSunsetNoticeEmail = ({
 					<Text className="text-base leading-7">
 						Hi {userFirstname}, we've{" "}
 						<Link
-							href="https://inbound.new/blog/inbound-is-retiring-the-free-plan?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_notice"
+							href={`${APP_URL}/blog/inbound-is-retiring-the-free-plan?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_notice`}
 							className="text-violet-600 underline"
 						>
 							sunset the free plan
@@ -81,7 +82,7 @@ export const FreePlanSunsetNoticeEmail = ({
 
 					<Text className="my-6">
 						<Link
-							href="https://inbound.new/settings/billing?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_notice"
+							href={`${APP_URL}/settings/billing?utm_source=email&utm_medium=transactional&utm_campaign=free_plan_sunset_notice`}
 							className="text-violet-600 underline"
 						>
 							Upgrade My Account — $4/month
@@ -91,7 +92,7 @@ export const FreePlanSunsetNoticeEmail = ({
 					<Text className="text-base leading-7">
 						Questions? Reply to this email or contact{" "}
 						<Link
-							href="mailto:support@inbound.new"
+							href={`mailto:${SUPPORT_EMAIL}`}
 							className="text-violet-600 underline"
 						>
 							support
@@ -103,7 +104,7 @@ export const FreePlanSunsetNoticeEmail = ({
 
 					<Text className="mt-6 text-xs text-neutral-400">
 						<Link
-							href="https://inbound.new/unsubscribe"
+							href={`${APP_URL}/unsubscribe`}
 							className="text-neutral-400 underline"
 						>
 							Unsubscribe

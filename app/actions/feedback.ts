@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import FeedbackEmail from "@/emails/feedback";
 import { auth } from "@/lib/auth/auth";
 import { getInboundClient } from "@/lib/inbound-client";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 const inbound = getInboundClient();
 const linear = process.env.LINEAR_API_KEY
 	? new LinearClient({
@@ -18,9 +19,6 @@ export interface FeedbackData {
 	browserLogs?: string;
 }
 
-/**
- * Server action to send feedback email to ryan@inbound.new
- */
 export async function sendFeedbackAction(
 	data: FeedbackData,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
@@ -83,7 +81,7 @@ export async function sendFeedbackAction(
 		const html = await render(FeedbackEmail(templateProps));
 
 		// Determine the from address
-		const fromEmail = "feedback@inbound.new";
+		const fromEmail = `feedback@${NOTIFICATION_DOMAIN}`;
 
 		// Format sender with name - Resend accepts "Name <email@domain.com>" format
 		const fromWithName = `inbound feedback <${fromEmail}>`;

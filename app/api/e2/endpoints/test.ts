@@ -13,6 +13,7 @@ import type {
 import { getOrCreateVerificationToken } from "@/lib/webhooks/verification";
 import { generateTestPayload } from "@/lib/webhooks/webhook-formats";
 import { validateAndRateLimit } from "../lib/auth";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 
 // Request/Response Types (OpenAPI-compatible)
 const EndpointParamsSchema = t.Object({
@@ -70,7 +71,7 @@ function buildMockInboundWebhookPayload(endpoint: {
 }): InboundWebhookPayload {
 	const nowIso = new Date().toISOString();
 	const structuredEmailId = nanoid();
-	const msgId = `<test-${nanoid()}@mail.inbound.new>`;
+	const msgId = `<test-${nanoid()}@mail.${NOTIFICATION_DOMAIN}>`;
 
 	const fromAddress: InboundEmailAddress = {
 		text: "Inbound Test <test@example.com>",
@@ -99,11 +100,11 @@ function buildMockInboundWebhookPayload(endpoint: {
 			text: "test@example.com",
 		},
 		received: [
-			`from test-mta.inbound.new (test-mta.inbound.new [192.0.2.10]) by inbound-smtp.us-east-2.amazonaws.com with SMTP id ${nanoid(10)} for test@yourdomain.com; ${nowIso}`,
+			`from test-mta.${NOTIFICATION_DOMAIN} (test-mta.${NOTIFICATION_DOMAIN} [192.0.2.10]) by inbound-smtp.us-east-2.amazonaws.com with SMTP id ${nanoid(10)} for test@yourdomain.com; ${nowIso}`,
 			`by test-mx.google.com with SMTP id ${nanoid(12)}; ${nowIso}`,
 		],
 		"received-spf":
-			"pass (spfCheck: domain of example.com designates 192.0.2.10 as permitted sender) client-ip=192.0.2.10; envelope-from=test@example.com; helo=test-mta.inbound.new;",
+			`pass (spfCheck: domain of example.com designates 192.0.2.10 as permitted sender) client-ip=192.0.2.10; envelope-from=test@example.com; helo=test-mta.${NOTIFICATION_DOMAIN};`,
 		"authentication-results":
 			"amazonses.com; spf=pass; dkim=pass header.i=@example.com; dmarc=pass header.from=example.com;",
 		"x-ses-receipt": nanoid(64),

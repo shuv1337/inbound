@@ -1,10 +1,6 @@
-/**
- * Zone file generation utilities for DNS records
- * Based on RFC1035 standards using dns-zonefile library
- */
-
 // @ts-ignore - dns-zonefile doesn't have TypeScript definitions
 import zonefile from "dns-zonefile";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 
 export interface DnsRecord {
   type: "TXT" | "MX" | "CNAME" | "A" | "AAAA" | "SRV" | "SPF" | "CAA" | "DS" | "PTR";
@@ -189,7 +185,7 @@ export function generateZoneFile(
   // Add SOA record if requested
   if (includeSoa) {
     zonefileData.soa = {
-      mname: "ns1.inbound.new.",
+      mname: `ns1.${NOTIFICATION_DOMAIN}.`,
       rname: `admin.${baseDomain}.`,
       serial: Math.floor(Date.now() / 1000),
       refresh: 3600,

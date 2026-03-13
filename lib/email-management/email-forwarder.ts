@@ -1,6 +1,7 @@
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
 import type { ParsedEmailData } from './email-parser'
 import { generateEmailBannerHTML } from '@/components/email-banner'
+import { APP_URL } from '@/lib/config/app-url'
 
 export class EmailForwarder {
   private sesClient: SESv2Client
@@ -348,7 +349,7 @@ export class EmailForwarder {
     const bannerText = `
 
 ---
-sent via inbound.new, block ${recipientEmail}: https://inbound.new/addtoblocklist?email=${encodeURIComponent(recipientEmail)}
+sent via inbound, block ${recipientEmail}: ${APP_URL}/addtoblocklist?email=${encodeURIComponent(recipientEmail)}
 `
     
     return `${textContent}${bannerText}`

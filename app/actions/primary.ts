@@ -3492,6 +3492,7 @@ export async function getEmailVolumeChartData(
 // ============================================================================
 
 import { getInboundClient } from "@/lib/inbound-client";
+import { NOTIFICATION_DOMAIN } from "@/lib/config/app-url";
 
 const inbound = getInboundClient();
 
@@ -3554,7 +3555,7 @@ submitted: ${new Date().toLocaleDateString("en-US", {
 
 		// Send the email using Inbound
 		const response = await inbound.emails.send({
-			from: "threads waitlist <notifications@inbound.new>",
+			from: `threads waitlist <notifications@${NOTIFICATION_DOMAIN}>`,
 			to: "ryan@mandarin3d.com",
 			reply_to: data.email.trim(),
 			subject: `🧵 new threads waitlist signup - ${data.email.trim()}`,
