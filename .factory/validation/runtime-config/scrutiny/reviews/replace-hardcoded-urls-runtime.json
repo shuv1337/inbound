@@ -1,0 +1,39 @@
+{
+  "featureId": "replace-hardcoded-urls-runtime",
+  "reviewedAt": "2026-03-13T07:30:00.000Z",
+  "commitId": "61fffa0",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 31 files updated correctly. Zero remaining inbound.new references in scoped directories (lib/, app/api/, app/actions/, app/vercel-oss-program/, emails/, components/email-banner.tsx). Sender addresses consistently use NOTIFICATION_DOMAIN, URLs use APP_URL/DOCS_URL/API_BASE_URL from lib/config/app-url.ts. Import paths use @/ alias throughout. Two non-blocking issues noted.",
+    "issues": [
+      {
+        "file": "app/vercel-oss-program/page.tsx",
+        "line": 19,
+        "severity": "non_blocking",
+        "description": "Import statement `import { toast } from 'sonner'` appears after non-import code (const APP_HOST/supportEmail declarations at lines 12-19). ES module imports are hoisted so this works, but violates conventional import ordering. The domain extraction logic also duplicates extractDomain() from lib/config/app-url.ts, though this duplication is justified because this is a 'use client' component and lib/config/app-url.ts mixes server-only env vars (INTERNAL_BASE_URL, SUPPORT_EMAIL) making it unsafe to import from client components."
+      },
+      {
+        "file": "emails/reputation-alert.tsx",
+        "line": 101,
+        "severity": "non_blocking",
+        "description": "Fallback `${SUPPORT_EMAIL || \"support\"}` renders as just the word 'support' when SUPPORT_EMAIL is not set (it defaults to empty string in app-url.ts). The original text was 'Contact support@inbound.new' — the new version loses the email address in the fallback case. Renders as 'Contact support to discuss resuming service.' which is acceptable prose but less actionable than the original."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "lib/config/app-url.ts mixes server-only env vars (INTERNAL_BASE_URL, SUPPORT_EMAIL, LEGAL_EMAIL) with client-accessible env vars (NEXT_PUBLIC_APP_URL). This makes the module unsafe to import from 'use client' components, forcing the worker to duplicate domain extraction logic in app/vercel-oss-program/page.tsx. AGENTS.md documents the module's exports but doesn't note this client/server import constraint.",
+      "evidence": "app/vercel-oss-program/page.tsx lines 12-19 duplicate extractDomain() logic from lib/config/app-url.ts because the component is 'use client' and can't safely import the server-mixed module."
+    },
+    {
+      "area": "conventions",
+      "observation": "SUPPORT_EMAIL defaults to empty string in lib/config/app-url.ts, which means template fallbacks like `${SUPPORT_EMAIL || 'support'}` resolve to just the word 'support' rather than a full email address. If the intent is self-hosting where SUPPORT_EMAIL must be configured, this is fine. If a more useful default is expected, the config module should provide one (e.g., `support@${NOTIFICATION_DOMAIN}`).",
+      "evidence": "lib/config/app-url.ts line 9: `export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || \"\";` — emails/reputation-alert.tsx line 101 uses `${SUPPORT_EMAIL || \"support\"}` as fallback text."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. The feature comprehensively replaces all hardcoded inbound.new references across the 31 scoped files. All sender addresses use NOTIFICATION_DOMAIN, all URLs use config-driven values from lib/config/app-url.ts. Verification grep confirms zero remaining matches in scope. Two non-blocking issues noted: (1) import ordering in vercel-oss-program/page.tsx, and (2) SUPPORT_EMAIL fallback renders as plain text 'support' rather than an email address. Both are minor and don't affect functionality. The worker followed the refactor-worker skill procedure correctly."
+}

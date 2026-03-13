@@ -1,7 +1,7 @@
 commands:
   install: bun install
   lint: bun run lint
-  typecheck: tsc --noEmit
+  typecheck: npx tsc --noEmit
   build: bun run build
   test: bun test
   test-e2: bun run test:e2

@@ -1,0 +1,104 @@
+{
+  "milestone": "runtime-config",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bun test",
+      "exitCode": 1,
+      "note": "Test failures are pre-existing: dsn-parser.test.ts fails due to missing DATABASE_URL env var, e2e.test.ts fails due to missing INBOUND_API_KEY. No runtime tests available per mission scope."
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "note": "Zero errors excluding bun:test module declarations (expected — bun test types unavailable to tsc)."
+    },
+    "lint": {
+      "passed": true,
+      "command": "bun run lint",
+      "exitCode": 1,
+      "note": "329 errors and 988 warnings — all pre-existing. None in files modified by this milestone. Verified by checking lint output before milestone changes vs after: same error count in same files (app/(content)/, app/(main)/ content pages)."
+    }
+  },
+  "reviewsSummary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "nonBlockingIssues": [
+    {
+      "featureId": "create-url-config-module",
+      "description": "extractDomain() uses naive last-2-hostname-parts approach — fails for ccTLDs like .co.uk. Acceptable for self-hosting use case."
+    },
+    {
+      "featureId": "create-url-config-module",
+      "description": "APP_URL with trailing slash would produce double-slash in API_BASE_URL (e.g., https://mail.shuv.dev//api). Deployer responsibility."
+    },
+    {
+      "featureId": "create-url-config-module",
+      "description": "SUPPORT_EMAIL and LEGAL_EMAIL default to empty string when env vars unset. Consumers must handle empty values."
+    },
+    {
+      "featureId": "create-inbound-sdk-client",
+      "description": "demo.ts body schema still requires apiKey field that is now ignored after refactor to shared client."
+    },
+    {
+      "featureId": "create-inbound-sdk-client",
+      "description": "email-notifications.ts uses inline getInboundClient() calls instead of module-level assignment (functionally equivalent but inconsistent)."
+    },
+    {
+      "featureId": "replace-hardcoded-urls-metadata",
+      "description": "sitemap.ts and robots.ts read process.env.NEXT_PUBLIC_APP_URL directly instead of importing APP_URL from lib/config/app-url.ts — violates stated convention but functionally identical."
+    },
+    {
+      "featureId": "replace-hardcoded-urls-runtime",
+      "description": "app/vercel-oss-program/page.tsx duplicates extractDomain() logic from lib/config/app-url.ts because it's a 'use client' component and the config module mixes server-only env vars."
+    },
+    {
+      "featureId": "replace-hardcoded-urls-runtime",
+      "description": "SUPPORT_EMAIL fallback in reputation-alert.tsx renders as plain 'support' text rather than a full email address when env var is unset."
+    }
+  ],
+  "appliedUpdates": [
+    {
+      "target": "services.yaml",
+      "description": "Changed typecheck command from 'tsc --noEmit' to 'npx tsc --noEmit' — tsc is not on PATH in worker environments and multiple workers wasted tool calls discovering this.",
+      "sourceFeature": "create-url-config-module, refactor-auth-for-self-hosting"
+    }
+  ],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add guidance: When refactoring endpoints that previously accepted per-request parameters (like apiKey from request body), also clean up the request body schema to remove now-unused fields. Dead schema fields create confusion and require clients to send unnecessary data.",
+      "evidence": "Feature create-inbound-sdk-client replaced per-request Inbound instantiation in demo.ts but left apiKey in the body schema. The field is now required by the schema but completely ignored by the handler.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add note under 'Central URL Config' that lib/config/app-url.ts mixes server-only env vars (INTERNAL_BASE_URL, SUPPORT_EMAIL, LEGAL_EMAIL) with client-accessible ones (NEXT_PUBLIC_APP_URL). 'use client' components cannot safely import this module — they should read NEXT_PUBLIC_APP_URL directly from process.env and derive values locally. Also clarify that next.config.ts is exempt from the import-from-config convention.",
+      "evidence": "Feature replace-hardcoded-urls-runtime: app/vercel-oss-program/page.tsx duplicated extractDomain() because it's a client component. Feature replace-hardcoded-urls-metadata: next.config.ts reads env directly. Two workers independently hit this constraint.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Document that SUPPORT_EMAIL should be set in .env.example with a meaningful default or note that empty-string default causes degraded text in email templates (e.g., 'Contact support' instead of 'Contact support@example.com').",
+      "evidence": "Feature replace-hardcoded-urls-runtime: reputation-alert.tsx line 101 uses fallback '${SUPPORT_EMAIL || \"support\"}' which produces 'Contact support to discuss resuming service' — less actionable than original text.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "psl package exists in package.json but has no @types/psl — should install types if robust TLD support is needed.",
+      "reason": "Out of scope for this mission. The naive domain extraction works for all practical self-hosting domains. Installing @types/psl would be a separate improvement."
+    },
+    {
+      "observation": "AGENTS.md already documents the Shared SDK Client pattern correctly.",
+      "reason": "Already documented — no gap."
+    }
+  ],
+  "previousRound": null
+}

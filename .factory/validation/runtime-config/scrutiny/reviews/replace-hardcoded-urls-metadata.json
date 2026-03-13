@@ -1,0 +1,45 @@
+{
+  "featureId": "replace-hardcoded-urls-metadata",
+  "reviewedAt": "2026-03-13T07:15:00.000Z",
+  "commitId": "f061b993c7b8f7dcbf8193515fde5bdfab591f4d",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 10 files were correctly updated to replace hardcoded inbound.new references with config-driven values from lib/config/app-url.ts. The diff touches exactly the files listed in the feature description. grep confirms zero remaining inbound.new references across all target files, and VERCEL_URL is fully removed from next.config.ts. Template literal interpolation in route.ts documentation strings is correct (${APP_URL} resolves inside backtick strings even when surrounded by single-quote characters in the markdown output). The manifest.ts correctly removed the unused baseUrl variable since start_url/scope use relative paths. The 4 icon_url references in webhook-formats.ts are all updated (the handoff claimed 6, but only 4 actual icon_url value assignments existed — the other 3 lines are type definitions).",
+    "issues": [
+      {
+        "file": "app/sitemap.ts",
+        "line": 31,
+        "severity": "non_blocking",
+        "description": "Reads process.env.NEXT_PUBLIC_APP_URL directly with a localhost fallback instead of importing APP_URL from lib/config/app-url.ts. The mission AGENTS.md convention says 'All runtime URLs derive from lib/config/app-url.ts. When replacing hardcoded inbound.new, import from this module rather than reading env vars directly.' While functionally identical (APP_URL does the same thing), this creates duplicated config logic and violates the stated convention."
+      },
+      {
+        "file": "app/robots.ts",
+        "line": 4,
+        "severity": "non_blocking",
+        "description": "Same issue as sitemap.ts — reads process.env.NEXT_PUBLIC_APP_URL directly instead of importing APP_URL from lib/config/app-url.ts. Duplicates the fallback logic."
+      },
+      {
+        "file": "lib/config/app-url.ts",
+        "line": 9,
+        "severity": "non_blocking",
+        "description": "SUPPORT_EMAIL defaults to empty string. When used in JSON-LD contactPoint.email (layout.tsx) and OpenAPI contact.email (spec.ts), this could produce invalid structured data. Not a bug for this feature specifically, but worth noting as a downstream concern for self-hosted instances without SUPPORT_EMAIL configured."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Worker used process.env.NEXT_PUBLIC_APP_URL directly in sitemap.ts and robots.ts rather than importing APP_URL from the config module. The AGENTS.md convention says to import from lib/config/app-url.ts, but the worker chose the inline pattern. This may indicate the convention should explicitly mention exceptions for files that previously had their own baseUrl variable, or that the convention needs stricter enforcement.",
+      "evidence": "app/sitemap.ts:31 — `const baseUrl = process.env.NEXT_PUBLIC_APP_URL || \"http://localhost:3000\"` vs app/page/metadata.ts:2 — `import { APP_URL } from \"@/lib/config/app-url\"`. Same feature, inconsistent approach."
+    },
+    {
+      "area": "conventions",
+      "observation": "next.config.ts reads NEXT_PUBLIC_APP_URL directly and derives appHostname locally rather than importing from lib/config/app-url.ts. This is a reasonable choice since next.config.ts is a build-time config file and importing from app modules could have bundling/resolution concerns. The AGENTS.md convention could clarify that next.config.ts is exempt.",
+      "evidence": "next.config.ts:3-4 — `const appUrl = process.env.NEXT_PUBLIC_APP_URL || \"http://localhost:3000\"; const appHostname = new URL(appUrl).hostname;`"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Feature passes review. All 10 target files correctly updated to replace hardcoded inbound.new references. OpenAPI servers array uses APP_URL, JSON-LD uses APP_URL and SUPPORT_EMAIL, CORS uses config-driven appUrl instead of VERCEL_URL, and all favicon/icon URLs are parameterized. Two non-blocking consistency issues: sitemap.ts and robots.ts read env vars directly instead of importing from the config module, creating minor convention inconsistency with the other 8 files that use the config import pattern."
+}

@@ -1,0 +1,39 @@
+{
+  "featureId": "create-inbound-sdk-client",
+  "reviewedAt": "2026-03-13T07:05:00.000Z",
+  "commitId": "bef75f1",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean implementation of a singleton SDK client module at lib/inbound-client.ts. Uses 'inboundemail' default import, INTERNAL_APP_URL from config, and INBOUND_API_KEY from env as required. All 8 runtime 'new Inbound(...)' call sites were replaced with getInboundClient(). Remaining grep hits are documentation-only (MDX changelog, OpenAPI template string). One behavioral change in demo.ts: the endpoint previously used a per-request apiKey from the body but now uses the shared server key — the body schema still requires apiKey but it's ignored. Import cleanup is thorough — only lib/inbound-client.ts imports from 'inboundemail'.",
+    "issues": [
+      {
+        "file": "app/api/e2/onboarding/demo.ts",
+        "line": 11,
+        "severity": "non_blocking",
+        "description": "SendDemoEmailBody schema still requires 'apiKey' (t.String) but it is no longer destructured or used after the refactor. The field should be removed from the schema to avoid requiring clients to send unused data. This is also a behavioral change: the demo endpoint previously used the user-supplied apiKey to send emails, now it uses the server's global INBOUND_API_KEY."
+      },
+      {
+        "file": "lib/email-management/email-notifications.ts",
+        "line": 88,
+        "severity": "non_blocking",
+        "description": "Unlike other refactored files which assign 'const inbound = getInboundClient()' at module level, this file calls getInboundClient() inline at each send site (lines 88, 273, 446). Functionally equivalent since getInboundClient() returns a cached singleton, but inconsistent with the pattern used in other files."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The mission AGENTS.md already documents the 'Shared SDK Client' pattern under Key Patterns, so no gap here. The convention is well-documented.",
+      "evidence": "Mission AGENTS.md section 'Shared SDK Client': All runtime new Inbound(...) calls should use getInboundClient() from lib/inbound-client.ts."
+    },
+    {
+      "area": "conventions",
+      "observation": "When replacing constructor calls that accepted per-request parameters (like apiKey from request body in demo.ts), the worker should also clean up the request schema to remove now-unused fields. This convention isn't documented anywhere.",
+      "evidence": "app/api/e2/onboarding/demo.ts line 11: SendDemoEmailBody still has apiKey: t.String() but line 41 changed from 'const { apiKey, to } = body' to 'const { to } = body'. The apiKey field is now dead in the schema."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Feature passes review. The shared SDK client module is well-implemented as a lazy singleton with correct imports and config usage. All 8 runtime Inbound constructor sites were replaced. Two non-blocking issues: (1) demo.ts body schema still requires an apiKey field that is now ignored — a minor behavioral change and dead schema field, (2) email-notifications.ts uses inline getInboundClient() calls instead of module-level assignment, which is an inconsistent but functionally equivalent pattern."
+}

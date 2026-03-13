@@ -1,0 +1,28 @@
+{
+  "featureId": "refactor-auth-for-self-hosting",
+  "reviewedAt": "2026-03-13T07:10:00.000Z",
+  "commitId": "242bc3e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean, complete refactoring. All 10 requirements from the feature description were addressed: (1) Imported APP_URL, NOTIFICATION_DOMAIN, PASSKEY_ORIGIN, PASSKEY_RP_ID, SUPPORT_EMAIL from config. (2) Replaced baseURL ternary chain with APP_URL. (3) Replaced trustedOrigins with [APP_URL, 'http://localhost:3000']. (4-5) Replaced GitHub/Google OAuth redirectURIs with APP_URL templates. (6) Replaced oAuthProxy productionURL/currentURL with APP_URL. (7) Replaced passkey rpID/origin with config exports. (8) Replaced magic link from/reply_to with NOTIFICATION_DOMAIN and SUPPORT_EMAIL. (9) All VERCEL_ENV, VERCEL_URL, VERCEL_BRANCH_URL references removed. (10) auth-client.ts now uses NEXT_PUBLIC_APP_URL env var with localhost fallback. Grep verification confirms zero matches for inbound.new and VERCEL_ in lib/auth/. The diff is -47/+19 lines — a net reduction in complexity. The Inbound SDK instantiation at the commit point used process.env.INTERNAL_BASE_URL || APP_URL directly rather than importing INTERNAL_APP_URL from config (a minor duplication), but this was subsequently addressed by a later feature (bef75f1) that introduced getInboundClient().",
+    "issues": [
+      {
+        "file": "lib/auth/auth.ts",
+        "line": 72,
+        "severity": "non_blocking",
+        "description": "At commit time, the Inbound SDK instantiation used `process.env.INTERNAL_BASE_URL || APP_URL` directly rather than importing the already-existing `INTERNAL_APP_URL` from `@/lib/config/app-url.ts`, which computes the same value. This duplicates config logic. However, this was addressed by the subsequent feature (commit bef75f1) that replaced all Inbound instantiations with `getInboundClient()`, so no current action needed."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The mission AGENTS.md says 'npx tsc — never run (use tsc --noEmit instead)' and services.yaml lists typecheck as 'tsc --noEmit', but tsc is not on PATH in the worker environment. The worker had to discover that ./node_modules/.bin/tsc works. The convention should specify the full invocation path or use 'bunx tsc --noEmit' to avoid confusion.",
+      "evidence": "Transcript shows worker tried 'tsc --noEmit' (command not found), then 'npx tsc --noEmit' (violates AGENTS.md rule), then finally settled on './node_modules/.bin/tsc --noEmit'. Three tool calls spent on this discovery."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The refactor-auth-for-self-hosting feature is a clean, well-executed refactoring. All 10 specified changes were implemented correctly across lib/auth/auth.ts and lib/auth/auth-client.ts. Hardcoded inbound.new URLs and all Vercel-specific environment variable references have been completely removed and replaced with config-driven values from lib/config/app-url.ts. The auth-client.ts SSR fallback correctly uses NEXT_PUBLIC_APP_URL with a localhost default. Verification confirms zero remaining matches for both inbound.new and VERCEL_ patterns in lib/auth/. One non-blocking observation: the Inbound SDK instantiation at commit time duplicated INTERNAL_APP_URL logic but was resolved by a subsequent feature. Pass."
+}

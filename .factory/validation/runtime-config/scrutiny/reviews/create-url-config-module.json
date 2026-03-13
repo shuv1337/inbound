@@ -1,0 +1,45 @@
+{
+  "featureId": "create-url-config-module",
+  "reviewedAt": "2026-03-13T07:15:00.000Z",
+  "commitId": "40317c2",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Clean, minimal config module that exports all 9 required values from environment variables. Zero imports, no hardcoded 'inbound.new' fallbacks. All values derived correctly from process.env with sensible localhost defaults. The module is already being consumed by 10+ files across the codebase (auth, email notifications, actions, webhooks, etc.), confirming it serves as the central URL/domain config as intended.",
+    "issues": [
+      {
+        "file": "lib/config/app-url.ts",
+        "line": 20,
+        "severity": "non_blocking",
+        "description": "extractDomain() uses a naive 'last 2 hostname parts' approach which fails for multi-level TLDs (e.g., .co.uk, .com.au). For 'example.co.uk' it would return 'co.uk' instead of 'example.co.uk'. The psl package is available in package.json but was skipped due to missing @types/psl. For the practical self-hosting use case (domains like shuv.dev, inbound.new) this works correctly."
+      },
+      {
+        "file": "lib/config/app-url.ts",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "If NEXT_PUBLIC_APP_URL is set with a trailing slash (e.g., 'https://mail.shuv.dev/'), API_BASE_URL becomes 'https://mail.shuv.dev//api' with a double slash. Minor — deployer's responsibility to set clean URLs, and most HTTP clients normalize double slashes."
+      },
+      {
+        "file": "lib/config/app-url.ts",
+        "line": 10,
+        "severity": "non_blocking",
+        "description": "SUPPORT_EMAIL and LEGAL_EMAIL default to empty string when env vars are unset. Consumers must handle empty values — and some already do (e.g., lib/auth/auth.ts:166 falls back to 'support@${NOTIFICATION_DOMAIN}'). Not a bug but worth documenting expected env vars for self-hosting."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Worker discovered tsc is not in PATH and used ./node_modules/.bin/tsc directly. The services.yaml lists 'typecheck: tsc --noEmit' which works via bun/npm run but not as a bare command. Workers consistently need to use the full path or 'bun run' prefix.",
+      "evidence": "Transcript shows 'bash: line 1: tsc: command not found' followed by worker switching to './node_modules/.bin/tsc --noEmit'. services.yaml says 'typecheck: tsc --noEmit'."
+    },
+    {
+      "area": "knowledge",
+      "observation": "psl (public suffix list) package exists in package.json (^1.15.0) but has no @types/psl and is not imported anywhere in TS files. Worker investigated it but chose not to use it for domain extraction. If robust multi-level TLD support is ever needed, @types/psl should be installed.",
+      "evidence": "Transcript shows worker grepping for psl in package.json (found at line 144) and checking for type declarations (none found). Worker then wrote a manual extractDomain function."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The lib/config/app-url.ts module is a clean, well-structured implementation that meets all feature requirements. It exports all 9 required values (APP_URL, INTERNAL_APP_URL, API_BASE_URL, DOCS_URL, SUPPORT_EMAIL, LEGAL_EMAIL, PASSKEY_RP_ID, PASSKEY_ORIGIN, NOTIFICATION_DOMAIN) derived purely from environment variables with no hardcoded 'inbound.new' references and zero imports from restricted modules. Three non-blocking issues noted: naive domain extraction for ccTLDs, potential trailing-slash double-slash in API_BASE_URL, and empty-string defaults for email env vars. All are acceptable for the self-hosting use case. The module is already successfully consumed by 10+ files across auth, email notifications, actions, and API endpoints."
+}
