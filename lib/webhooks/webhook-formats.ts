@@ -1,4 +1,5 @@
 import type { WebhookFormat } from '@/lib/db/schema'
+import { APP_URL } from '@/lib/config/app-url'
 
 // Base email data structure that all formats will use
 export interface BaseEmailData {
@@ -173,7 +174,7 @@ export const WEBHOOK_FORMAT_CONFIGS: Record<WebhookFormat, WebhookFormatConfig> 
         timestamp: data.timestamp,
         footer: {
           text: 'Inbound Email Service - Test',
-          icon_url: 'https://inbound.new/favicon.ico'
+          icon_url: `${APP_URL}/favicon.ico`
         },
         fields: [
           {
@@ -203,7 +204,7 @@ export const WEBHOOK_FORMAT_CONFIGS: Record<WebhookFormat, WebhookFormatConfig> 
         timestamp: data.timestamp,
         footer: {
           text: 'Inbound Email Service',
-          icon_url: 'https://inbound.new/favicon.ico'
+          icon_url: `${APP_URL}/favicon.ico`
         },
         fields: [
           {
@@ -237,7 +238,7 @@ export const WEBHOOK_FORMAT_CONFIGS: Record<WebhookFormat, WebhookFormatConfig> 
     testPayload: (data: BaseEmailData): SlackWebhookPayload => ({
       text: `📧 *Test Email Received*`,
       username: 'Inbound Email',
-      icon_url: 'https://inbound.new/favicon.ico',
+      icon_url: `${APP_URL}/favicon.ico`,
       attachments: [{
         fallback: `Test email: ${data.subject}`,
         color: 'good',
@@ -267,7 +268,7 @@ export const WEBHOOK_FORMAT_CONFIGS: Record<WebhookFormat, WebhookFormatConfig> 
     realPayload: (data: BaseEmailData): SlackWebhookPayload => ({
       text: `📧 *New Email Received*`,
       username: 'Inbound Email',
-      icon_url: 'https://inbound.new/favicon.ico',
+      icon_url: `${APP_URL}/favicon.ico`,
       attachments: [{
         fallback: `New email: ${data.subject}`,
         color: '#0099ff',

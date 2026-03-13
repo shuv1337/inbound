@@ -7,6 +7,7 @@ import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { RealtimeProvider } from "@/components/providers/realtime-provider";
+import { APP_URL, SUPPORT_EMAIL } from "@/lib/config/app-url";
 
 const outfit = Outfit({
 	variable: "--font-outfit",
@@ -216,8 +217,8 @@ export default function RootLayout({
 							"@context": "https://schema.org",
 							"@type": "Organization",
 							name: "Inbound",
-							url: "https://inbound.new",
-							logo: "https://inbound.new/logo.png",
+							url: APP_URL,
+							logo: `${APP_URL}/logo.png`,
 							description:
 								"Complete email infrastructure for modern applications. Send transactional emails, receive inbound messages, and build AI email agents with our TypeScript SDK and webhook API.",
 							sameAs: [
@@ -227,7 +228,7 @@ export default function RootLayout({
 							contactPoint: {
 								"@type": "ContactPoint",
 								contactType: "customer service",
-								email: "support@inbound.new",
+								email: SUPPORT_EMAIL,
 							},
 							offers: {
 								"@type": "Offer",

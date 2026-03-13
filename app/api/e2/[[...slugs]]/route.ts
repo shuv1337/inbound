@@ -1,5 +1,6 @@
 import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
+import { APP_URL, DOCS_URL } from "@/lib/config/app-url";
 import { createBlockedSignupDomain } from "../admin/blocked-signup-domains/create";
 import { deleteBlockedSignupDomain } from "../admin/blocked-signup-domains/delete";
 import { getBlockedSignupDomain } from "../admin/blocked-signup-domains/get";
@@ -108,7 +109,7 @@ const payload: InboundWebhookPayload = {
           size: 45678,
           contentId: '<att_abc123>',
           contentDisposition: 'attachment',
-          downloadUrl: 'https://inbound.new/api/e2/attachments/inbnd_abc123/order-receipt.pdf'
+          downloadUrl: '${APP_URL}/api/e2/attachments/inbnd_abc123/order-receipt.pdf'
         }
       ]
     }
@@ -194,7 +195,7 @@ const app = new Elysia({ prefix: "/api/e2" })
 				openapi: "3.1.0",
 				servers: [
 					{
-						url: "https://inbound.new",
+						url: APP_URL,
 						description: "Production API server",
 					},
 				],
@@ -212,13 +213,13 @@ All API requests require a Bearer token in the Authorization header:
 
 \`\`\`bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://inbound.new/api/e2/domains
+  ${APP_URL}/api/e2/domains
 \`\`\`
 
 ## Base URL
 
 \`\`\`
-https://inbound.new/api/e2
+${APP_URL}/api/e2
 \`\`\`
 
 ## Quick Start
@@ -437,7 +438,7 @@ https://inbound.new/api/e2
 				message: "The requested resource was not found.",
 				statusCode: 404,
 				deprecation_notice:
-					"The /api/v2 routes and @inboundemail/sdk package are deprecated due to security concerns. Please migrate to the official 'inboundemail' package and use /api/e2 routes. See https://inbound.new/docs for documentation.",
+					`The /api/v2 routes and @inboundemail/sdk package are deprecated due to security concerns. Please migrate to the official 'inboundemail' package and use /api/e2 routes. See ${DOCS_URL} for documentation.`,
 			};
 		}
 

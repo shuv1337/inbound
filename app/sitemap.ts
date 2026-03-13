@@ -28,7 +28,7 @@ async function getBlogPosts() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://inbound.new";
+	const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 	// Get dynamic content
 	const changelogEntries = await getChangelogEntries();

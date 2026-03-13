@@ -1,8 +1,7 @@
 import { MetadataRoute } from "next";
+import { DOCS_URL } from "@/lib/config/app-url";
 
 export default function manifest(): MetadataRoute.Manifest {
-	const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://inbound.new";
-
 	return {
 		name: "inbound - Email Infrastructure Platform",
 		short_name: "inbound",
@@ -100,7 +99,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		related_applications: [
 			{
 				platform: "web",
-				url: "https://docs.inbound.new",
+				url: DOCS_URL,
 				id: "inbound-docs",
 			},
 		],

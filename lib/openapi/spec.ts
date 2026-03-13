@@ -1,4 +1,5 @@
 import { OpenAPIV3 } from 'openapi-types'
+import { SUPPORT_EMAIL } from '@/lib/config/app-url'
 
 export async function getOpenAPISpec(): Promise<OpenAPIV3.Document> {
   const spec: OpenAPIV3.Document = {
@@ -9,7 +10,7 @@ export async function getOpenAPISpec(): Promise<OpenAPIV3.Document> {
       version: '1.0.0',
       contact: {
         name: 'API Support',
-        email: 'support@inbound.new',
+        email: SUPPORT_EMAIL,
       },
       license: {
         name: 'MIT',

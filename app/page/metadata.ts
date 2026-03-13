@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { APP_URL } from "@/lib/config/app-url";
 
 export const homePageMetadata: Metadata = {
   title: 'inbound - The Modern Email Infrastructure Platform for Developers',
@@ -25,7 +26,7 @@ export const homePageMetadata: Metadata = {
     title: 'inbound - The Modern Email Infrastructure Platform for Developers',
     description: 'Stop struggling with email infrastructure. Get unlimited email processing, TypeScript SDK, and webhook integration at 90% less cost than competitors.',
     type: 'website',
-    url: 'https://inbound.new',
+    url: APP_URL,
     siteName: 'inbound',
     images: [
       {
@@ -46,7 +47,7 @@ export const homePageMetadata: Metadata = {
     site: '@inboundemail',
   },
   alternates: {
-    canonical: 'https://inbound.new',
+    canonical: APP_URL,
   },
   other: {
     'google-site-verification': process.env.GOOGLE_SITE_VERIFICATION || '',

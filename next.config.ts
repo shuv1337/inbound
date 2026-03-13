@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appHostname = new URL(appUrl).hostname;
+
 const nextConfig: NextConfig = {
 	/* config options here */
 	// Add Turbopack configuration to suppress warnings
@@ -18,7 +21,7 @@ const nextConfig: NextConfig = {
 		remotePatterns: [
 			{
 				protocol: "https",
-				hostname: "inbound.new",
+				hostname: appHostname,
 			},
 		],
 		formats: ["image/webp", "image/avif"],
@@ -44,12 +47,7 @@ const nextConfig: NextConfig = {
 				headers: [
 					{
 						key: "Access-Control-Allow-Origin",
-						value:
-							process.env.NODE_ENV === "development"
-								? "https://dev.inbound.new"
-								: process.env.VERCEL_URL
-									? `https://${process.env.VERCEL_URL}`
-									: "https://inbound.new",
+						value: appUrl,
 					},
 					{
 						key: "Access-Control-Allow-Methods",

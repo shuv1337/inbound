@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og'
 import { promises as fs } from 'fs'
 import path from 'path'
 import InboundIcon from '@/components/icons/inbound'
+import { APP_URL } from '@/lib/config/app-url'
 
 export const runtime = 'nodejs'
 
@@ -29,7 +30,7 @@ export default async function Image() {
           alignItems: 'flex-start',
           justifyContent: 'flex-end',
           backgroundColor: '#0a0b10',
-          backgroundImage: `url(${process.env.NODE_ENV === 'production' ? 'https://inbound.new' : 'http://localhost:3000'}/inbound-hero.png)`,
+          backgroundImage: `url(${APP_URL}/inbound-hero.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           position: 'relative',
