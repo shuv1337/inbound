@@ -13,8 +13,6 @@ import { BatchRuleManager } from "@/lib/aws-ses/batch-rule-manager";
 import { isRootDomain } from "@/lib/domains-and-dns/domain-utils";
 import { getDependentSubdomains } from "@/lib/db/domains";
 import { deleteDomainFromSES } from "@/lib/domains-and-dns/domain-verification";
-import { Autumn as autumn } from "autumn-js";
-
 // Response Types (OpenAPI-compatible)
 const DeletedResourcesSchema = t.Object({
   domain: t.String(),
@@ -258,30 +256,6 @@ export const deleteDomain = new Elysia().delete(
       console.error("❌ Failed to delete domain:", domainError);
       set.status = 500;
       return { error: "Failed to delete domain" };
-    }
-
-    // 7. Track domain deletion with Autumn to free up domain spot
-    try {
-      console.log("📊 Tracking domain deletion with Autumn for user:", userId);
-      const { error: trackError } = await autumn.track({
-        customer_id: userId,
-        feature_id: "domains",
-        value: -1,
-      });
-
-      if (trackError) {
-        console.error("⚠️ Failed to track domain deletion:", trackError);
-        console.warn(
-          `⚠️ Domain deleted but usage tracking failed for user: ${userId}`
-        );
-      } else {
-        console.log(
-          `✅ Successfully tracked domain deletion for user: ${userId}`
-        );
-      }
-    } catch (trackingError) {
-      console.error("⚠️ Failed to use Autumn tracking:", trackingError);
-      // Don't fail the deletion if tracking fails, just log it
     }
 
     console.log("✅ Successfully deleted domain and all associated resources");

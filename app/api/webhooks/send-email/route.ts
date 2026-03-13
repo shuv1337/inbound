@@ -852,32 +852,6 @@ async function handleBatchEmail(
 			})
 			.where(eq(sentEmails.id, emailId));
 
-		// Track email usage with Autumn (blocking - every email must count towards quota)
-		try {
-			const { Autumn: autumn } = await import("autumn-js");
-			const { data: emailCheck } = await autumn.check({
-				customer_id: effectiveUserId,
-				feature_id: "emails_sent",
-			});
-
-			if (emailCheck && !emailCheck.unlimited) {
-				console.log("📊 Tracking email usage with Autumn");
-				const { error: trackError } = await autumn.track({
-					customer_id: effectiveUserId,
-					feature_id: "emails_sent",
-					value: 1,
-				});
-
-				if (trackError) {
-					console.error("❌ Failed to track email usage:", trackError);
-					// Don't fail the request if tracking fails, but log it
-				}
-			}
-		} catch (trackError) {
-			console.error("❌ Failed to track email usage:", trackError);
-			// Don't fail the request if tracking fails
-		}
-
 		// Evaluate email for security risks (non-blocking)
 		waitUntil(
 			evaluateSending(emailId, effectiveUserId, {

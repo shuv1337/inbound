@@ -9,7 +9,6 @@ import { getDomainWithRecords, updateDomainStatus, createDomainVerification, del
 import { SESClient, GetIdentityVerificationAttributesCommand } from '@aws-sdk/client-ses'
 import { AWSSESReceiptRuleManager } from '@/lib/aws-ses/aws-ses-rules'
 import { BatchRuleManager } from '@/lib/aws-ses/batch-rule-manager'
-import { Autumn as autumn } from 'autumn-js'
 import { db } from '@/lib/db'
 import { emailDomains, domainDnsRecords, emailAddresses, webhooks, endpoints, sesEvents, DOMAIN_STATUS } from '@/lib/db/schema'
 import { eq, count, and, sql } from 'drizzle-orm'
@@ -139,49 +138,6 @@ export async function addDomain(domain: string) {
       }
     }
 
-    // Check Autumn domain limits before proceeding
-    console.log(`🔍 Add Domain - Checking Autumn domain limits for user: ${userId}`)
-    const { data: domainCheck, error: domainCheckError } = await autumn.check({
-      customer_id: userId,
-      feature_id: "domains",
-    })
-
-    if (domainCheckError) {
-      console.error('Add Domain - Autumn domain check error:', domainCheckError)
-      return {
-        success: false,
-        domain,
-        domainId: '',
-        verificationToken: '',
-        status: 'failed' as const,
-        dnsRecords: [],
-        canProceed: false,
-        error: 'Failed to check domain limits',
-        timestamp: new Date()
-      }
-    }
-
-    if (!domainCheck?.allowed) {
-      console.log(`❌ Add Domain - Domain limit reached for user: ${userId}`)
-      return {
-        success: false,
-        domain,
-        domainId: '',
-        verificationToken: '',
-        status: 'failed' as const,
-        dnsRecords: [],
-        canProceed: false,
-        error: 'Domain limit reached. Please upgrade your plan to add more domains.',
-        timestamp: new Date()
-      }
-    }
-
-    console.log(`✅ Add Domain - Domain limits check passed for user: ${userId}`, {
-      allowed: domainCheck.allowed,
-      balance: domainCheck.balance,
-      unlimited: domainCheck.unlimited
-    })
-
     // Step 1: Check DNS records first
     console.log(`🔍 Add Domain - Checking DNS records for ${domain}`)
     const dnsResult = await checkDomainCanReceiveEmails(domain)
@@ -200,25 +156,6 @@ export async function addDomain(domain: string) {
 
     // Step 3: Use the shared verification function to initiate SES verification
     const verificationResult = await initiateDomainVerification(domain, userId)
-
-    // Step 4: Track domain usage with Autumn (only if not unlimited)
-    if (!domainCheck.unlimited) {
-      console.log(`📊 Add Domain - Tracking domain usage with Autumn for user: ${userId}`)
-      const { error: trackError } = await autumn.track({
-        customer_id: userId,
-        feature_id: "domains",
-        value: 1,
-      })
-
-      if (trackError) {
-        console.error('Add Domain - Failed to track domain usage:', trackError)
-        console.warn(`⚠️ Add Domain - Domain created but usage tracking failed for user: ${userId}`)
-      } else {
-        console.log(`✅ Add Domain - Successfully tracked domain usage for user: ${userId}`)
-      }
-    } else {
-      console.log(`♾️ Add Domain - User has unlimited domains, no tracking needed for user: ${userId}`)
-    }
 
     // Map old status values to new simplified enum
     let mappedStatus: 'pending' | 'verified' | 'failed' = 'pending'
@@ -828,21 +765,6 @@ export async function deleteDomain(domain: string, domainId: string) {
     }
 
     console.log(`✅ Delete Domain - Domain deleted from database: ${domain}`)
-
-    // Step 4: Track domain deletion with Autumn to free up domain spot
-    console.log(`📊 Delete Domain - Tracking domain deletion with Autumn for user: ${userId}`)
-    const { error: trackError } = await autumn.track({
-      customer_id: userId,
-      feature_id: "domains",
-      value: -1,
-    })
-
-    if (trackError) {
-      console.error('Delete Domain - Failed to track domain deletion:', trackError)
-      console.warn(`⚠️ Delete Domain - Domain deleted but usage tracking failed for user: ${userId}`)
-    } else {
-      console.log(`✅ Delete Domain - Successfully tracked domain deletion for user: ${userId}`)
-    }
 
     console.log(`🏁 Delete Domain - Completed deletion for ${domain}`)
 

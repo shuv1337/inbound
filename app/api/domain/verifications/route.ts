@@ -7,10 +7,9 @@ import { getDomainWithRecords, updateDomainStatus, createDomainVerification, del
 import { SESClient, GetIdentityVerificationAttributesCommand, VerifyDomainIdentityCommand } from '@aws-sdk/client-ses'
 import { AWSSESReceiptRuleManager } from '@/lib/aws-ses/aws-ses-rules'
 import { BatchRuleManager } from '@/lib/aws-ses/batch-rule-manager'
-import { Autumn as autumn } from 'autumn-js'
 import { db } from '@/lib/db'
 import { emailDomains } from '@/lib/db/schema'
-import { eq, count, and, sql } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 
 // AWS SES Client setup
 const awsRegion = process.env.AWS_REGION || 'us-east-2'
@@ -401,55 +400,6 @@ async function handleAddDomain(
       return NextResponse.json(response, { status: 400 })
     }
 
-    // Check Autumn domain limits before proceeding
-    console.log(`🔍 Add Domain - Checking Autumn domain limits for user: ${userId}`)
-    const { data: domainCheck, error: domainCheckError } = await autumn.check({
-      customer_id: userId,
-      feature_id: "domains",
-    })
-
-    console.log(await autumn.check({customer_id: userId, feature_id: "domains"}))
-
-    if (domainCheckError) {
-      console.error('Add Domain - Autumn domain check error:', domainCheckError)
-      const response: AddDomainResponse = {
-        success: false,
-        domain,
-        domainId: '',
-        verificationToken: '',
-        status: 'failed',
-        dnsRecords: [],
-        canProceed: false,
-        error: 'Failed to check domain limits',
-        timestamp: new Date()
-      }
-      return NextResponse.json(response, { status: 500 })
-    }
-
-    console.log('domainCheck', domainCheck)
-
-    if (!domainCheck?.allowed) {
-      console.log(`❌ Add Domain - Domain limit reached for user: ${userId}`)
-      const response: AddDomainResponse = {
-        success: false,
-        domain,
-        domainId: '',
-        verificationToken: '',
-        status: 'failed',
-        dnsRecords: [],
-        canProceed: false,
-        error: 'Domain limit reached. Please upgrade your plan to add more domains.',
-        timestamp: new Date()
-      }
-      return NextResponse.json(response, { status: 403 })
-    }
-
-    console.log(`✅ Add Domain - Domain limits check passed for user: ${userId}`, {
-      allowed: domainCheck.allowed,
-      balance: domainCheck.balance,
-      unlimited: domainCheck.unlimited
-    })
-
     // Step 1: Check DNS records first
     console.log(`🔍 Add Domain - Checking DNS records for ${domain}`)
     const dnsResult = await checkDomainCanReceiveEmails(domain)
@@ -468,26 +418,6 @@ async function handleAddDomain(
 
     // Step 3: Use the shared verification function to initiate SES verification
     const verificationResult = await initiateDomainVerification(domain, userId)
-
-    // Step 4: Track domain usage with Autumn (only if not unlimited)
-    if (!domainCheck.unlimited) {
-      console.log(`📊 Add Domain - Tracking domain usage with Autumn for user: ${userId}`)
-      const { error: trackError } = await autumn.track({
-        customer_id: userId,
-        feature_id: "domains",
-        value: 1,
-      })
-
-      if (trackError) {
-        console.error('Add Domain - Failed to track domain usage:', trackError)
-        // Don't fail the domain creation if tracking fails, just log it
-        console.warn(`⚠️ Add Domain - Domain created but usage tracking failed for user: ${userId}`)
-      } else {
-        console.log(`✅ Add Domain - Successfully tracked domain usage for user: ${userId}`)
-      }
-    } else {
-      console.log(`♾️ Add Domain - User has unlimited domains, no tracking needed for user: ${userId}`)
-    }
 
     // Map old status values to new simplified enum
     let mappedStatus: 'pending' | 'verified' | 'failed' = 'pending'
@@ -929,22 +859,6 @@ async function handleDeleteDomain(
     }
 
     console.log(`✅ Delete Domain - Domain deleted from database: ${domain}`)
-
-    // Step 4: Track domain deletion with Autumn to free up domain spot
-    console.log(`📊 Delete Domain - Tracking domain deletion with Autumn for user: ${userId}`)
-    const { error: trackError } = await autumn.track({
-      customer_id: userId,
-      feature_id: "domains",
-      value: -1,
-    })
-
-    if (trackError) {
-      console.error('Delete Domain - Failed to track domain deletion:', trackError)
-      // Don't fail the deletion if tracking fails, just log it
-      console.warn(`⚠️ Delete Domain - Domain deleted but usage tracking failed for user: ${userId}`)
-    } else {
-      console.log(`✅ Delete Domain - Successfully tracked domain deletion for user: ${userId}`)
-    }
 
     const duration = Date.now() - startTime
     console.log(`🏁 Delete Domain - Completed deletion for ${domain} in ${duration}ms`)

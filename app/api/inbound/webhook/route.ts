@@ -3,14 +3,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sesEvents, structuredEmails, emailDomains } from '@/lib/db/schema'
-import { user } from '@/lib/db/auth-schema'
 import { eq, and } from 'drizzle-orm'
-import { Autumn as autumn } from 'autumn-js'
 import { parseEmail, type ParsedEmailData } from '@/lib/email-management/email-parser'
 import { type SESEvent, type SESRecord } from '@/lib/aws-ses/aws-ses'
 import { isEmailBlocked } from '@/lib/email-management/email-blocking'
 import { routeEmail } from '@/lib/email-management/email-router'
-import { sendLimitReachedNotification } from '@/lib/email-management/email-notifications'
 import { isDsn } from '@/lib/email-management/dsn-parser'
 import { recordDeliveryEventFromDsn } from '@/lib/email-management/delivery-event-tracker'
 import {
@@ -110,69 +107,7 @@ async function mapRecipientToUserId(recipient: string): Promise<string> {
   }
 }
 
-/**
- * Check and track inbound trigger usage for a user
- */
-async function checkAndTrackInboundTrigger(userId: string, recipient: string): Promise<{ allowed: boolean; error?: string }> {
-  // Skip tracking for system emails
-  if (userId === 'system') {
-    console.log(`📧 Webhook - Skipping inbound trigger check for system email: ${recipient}`)
-    return { allowed: true }
-  }
 
-  try {
-    // Check if user can use inbound triggers
-    const { data: triggerCheck, error: triggerCheckError } = await autumn.check({
-      customer_id: userId,
-      feature_id: "inbound_triggers",
-    })
-
-    if (triggerCheckError) {
-      console.error(`❌ Webhook - Autumn inbound trigger check error for user ${userId}:`, triggerCheckError)
-      return { 
-        allowed: false, 
-        error: `Failed to check inbound trigger limits: ${triggerCheckError}` 
-      }
-    }
-
-    if (!triggerCheck?.allowed) {
-      console.warn(`⚠️ Webhook - User ${userId} not allowed to use inbound triggers for email: ${recipient}`)
-      return { 
-        allowed: false, 
-        error: 'Inbound trigger limit reached. Please upgrade your plan to process more emails.' 
-      }
-    }
-
-    // Track the inbound trigger usage if allowed and not unlimited
-    if (!triggerCheck.unlimited) {
-      const { error: trackError } = await autumn.track({
-        customer_id: userId,
-        feature_id: "inbound_triggers",
-        value: 1,
-      })
-
-      if (trackError) {
-        console.error(`❌ Webhook - Failed to track inbound trigger usage for user ${userId}:`, trackError)
-        return { 
-          allowed: false, 
-          error: `Failed to track inbound trigger usage: ${trackError}` 
-        }
-      }
-
-      console.log(`📊 Webhook - Tracked inbound trigger usage for user ${userId}, email: ${recipient}`)
-    } else {
-      console.log(`♾️ Webhook - User ${userId} has unlimited inbound triggers, no tracking needed for: ${recipient}`)
-    }
-
-    return { allowed: true }
-  } catch (error) {
-    console.error(`❌ Webhook - Error checking/tracking inbound trigger for user ${userId}:`, error)
-    return { 
-      allowed: false, 
-      error: `Inbound trigger check failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
-    }
-  }
-}
 
 /**
  * Create a structured email record from ParsedEmailData that matches the type exactly
@@ -545,51 +480,6 @@ export async function POST(request: NextRequest) {
 
           const fingerprint = buildInboundDedupeFingerprint(userId, recipient, normalizedEmailMessageId)
           console.log(`✅ Webhook - DEDUPE decision=accepted scope=recipient fingerprint=${fingerprint}`)
-
-          // Check and track inbound trigger usage
-          const triggerResult = await checkAndTrackInboundTrigger(userId, recipient)
-          
-          if (!triggerResult.allowed) {
-            console.warn(`⚠️ Webhook - Rejected email for ${recipient} due to inbound trigger limits: ${triggerResult.error}`)
-            rejectedEmails.push({
-              messageId: mail.messageId,
-              recipient: recipient,
-              userId: userId,
-              reason: triggerResult.error || 'Inbound trigger limit reached',
-              subject: mail.commonHeaders.subject,
-            })
-            
-            // Send limit reached notification to user (async, don't wait)
-            // Look up user details first
-            const domain = extractDomain(recipient)
-            db.select({ email: user.email, name: user.name })
-              .from(user)
-              .where(eq(user.id, userId))
-              .limit(1)
-              .then(async (userResult) => {
-                if (userResult[0]?.email) {
-                  try {
-                    await sendLimitReachedNotification({
-                      userEmail: userResult[0].email,
-                      userName: userResult[0].name,
-                      userId: userId,
-                      limitType: 'inbound_triggers',
-                      rejectedEmailCount: 1,
-                      rejectedRecipient: recipient,
-                      domain: domain,
-                      triggeredAt: new Date(),
-                    })
-                  } catch (notificationError) {
-                    console.error(`❌ Webhook - Failed to send limit reached notification to ${userResult[0].email}:`, notificationError)
-                  }
-                }
-              })
-              .catch((err) => {
-                console.error(`❌ Webhook - Failed to look up user ${userId} for limit notification:`, err)
-              })
-            
-            continue // Skip processing this recipient
-          }
 
           // Check if the sender email is blocked
           const senderBlocked = await isEmailBlocked(mail.source)

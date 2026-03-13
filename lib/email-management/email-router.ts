@@ -5,7 +5,6 @@
  * Used by the webhook API route after email ingestion to deliver emails to their configured destinations.
  */
 
-import { Autumn as autumn } from "autumn-js";
 import { and, asc, eq, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { Endpoint } from "@/features/endpoints/types";
@@ -75,27 +74,7 @@ export async function routeEmail(emailId: string): Promise<void> {
 			return; // Email is stored but not routed based on domain configuration
 		}
 
-		// 🛡️ GUARD: Check feature flag before evaluating Guard rules
-		let guardFeatureEnabled = false;
-		try {
-			const { data: guardCheck, error: guardCheckError } = await autumn.check({
-				customer_id: emailData.userId,
-				feature_id: "inbound_guard",
-			});
-			if (guardCheckError) {
-				console.error(
-					`⚠️ routeEmail - Autumn inbound_guard check error for user ${emailData.userId}:`,
-					guardCheckError,
-				);
-			} else {
-				guardFeatureEnabled = !!guardCheck?.allowed;
-			}
-		} catch (featureError) {
-			console.error(
-				"⚠️ routeEmail - Failed to check inbound_guard feature:",
-				featureError,
-			);
-		}
+		const guardFeatureEnabled = true;
 
 		if (guardFeatureEnabled) {
 			// 🛡️ GUARD: Evaluate Guard rules before routing
@@ -223,10 +202,6 @@ export async function routeEmail(emailId: string): Promise<void> {
 					);
 				}
 			}
-		} else {
-			console.log(
-				"🛡️ routeEmail - Skipping Guard evaluation (feature inbound_guard disabled for user)",
-			);
 		}
 
 		// 🧵 Thread Continuity: Check if this is a thread reply and route to original endpoint

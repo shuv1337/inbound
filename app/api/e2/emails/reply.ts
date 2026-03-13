@@ -1,6 +1,5 @@
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { waitUntil } from "@vercel/functions";
-import { Autumn as autumn } from "autumn-js";
 import { and, eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { nanoid } from "nanoid";
@@ -454,27 +453,6 @@ export const replyToEmail = new Elysia().post(
 			}
 		}
 
-		// Check Autumn for email sending limits
-		const { data: emailCheck, error: emailCheckError } = await autumn.check({
-			customer_id: userId,
-			feature_id: "emails_sent",
-		});
-
-		if (emailCheckError) {
-			console.error("❌ Autumn email check error:", emailCheckError);
-			set.status = 500;
-			return { error: "Failed to check email sending limits" };
-		}
-
-		if (!emailCheck.allowed) {
-			console.log("❌ Email sending limit reached for user:", userId);
-			set.status = 429;
-			return {
-				error:
-					"Email sending limit reached. Please upgrade your plan to send more emails.",
-			};
-		}
-
 		// Create email record
 		const replyEmailId = nanoid();
 		const messageId = `${replyEmailId}@${fromDomain}`;
@@ -755,20 +733,6 @@ export const replyToEmail = new Elysia().post(
 					updatedAt: new Date(),
 				})
 				.where(eq(sentEmails.id, replyEmailId));
-
-			// Track email usage with Autumn
-			if (!emailCheck.unlimited) {
-				console.log("📊 Tracking email usage with Autumn");
-				const { error: trackError } = await autumn.track({
-					customer_id: userId,
-					feature_id: "emails_sent",
-					value: 1,
-				});
-
-				if (trackError) {
-					console.error("❌ Failed to track email usage:", trackError);
-				}
-			}
 
 			// Evaluate email for security risks (non-blocking)
 			waitUntil(

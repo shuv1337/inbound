@@ -1,6 +1,5 @@
 "use server";
 
-import { Autumn as autumn, Customer } from "autumn-js";
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { headers } from "next/headers";
@@ -26,33 +25,6 @@ import {
 	parseEmail as libParseEmail,
 	sanitizeHtml,
 } from "@/lib/email-management/email-parser";
-
-// ============================================================================
-// PAYMENTS AND BILLING VIA AUTUMN
-// ============================================================================
-
-export async function generateAutumnBillingPortal() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session?.user?.id) {
-		return { error: "Unauthorized" };
-	}
-
-	const { data: billingPortal, error } = await autumn.customers.billingPortal(
-		session.user.id,
-		{
-			return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings`,
-		},
-	);
-
-	if (error || !billingPortal?.url) {
-		return { error: "Failed to create billing portal session" };
-	}
-
-	return { url: billingPortal.url };
-}
 
 export async function updateUserProfile(formData: FormData) {
 	const session = await auth.api.getSession({
@@ -95,22 +67,37 @@ export async function updateUserProfile(formData: FormData) {
 	}
 }
 
-export async function getAutumnCustomer() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+export async function generateAutumnBillingPortal(): Promise<{ url?: string; error?: string }> {
+	return { error: "Billing is not available in self-hosted mode" };
+}
 
-	if (!session?.user?.id) {
-		return { error: "Unauthorized" };
-	}
+interface CustomerProduct {
+	id: string;
+	name: string;
+	status: string;
+	is_add_on?: boolean;
+	canceled_at?: string | null;
+}
 
-	const { data: customer, error } = await autumn.customers.get(session.user.id);
+interface CustomerFeature {
+	used?: number;
+	limit?: number;
+	balance?: number;
+	usage?: number;
+	unlimited?: boolean;
+	[key: string]: unknown;
+}
 
-	if (error || !customer) {
-		return { error: "Failed to fetch customer" };
-	}
+interface CustomerStub {
+	products?: CustomerProduct[];
+	features?: Record<string, CustomerFeature>;
+}
 
-	return { customer: customer as Customer };
+export async function getAutumnCustomer(): Promise<{
+	customer?: CustomerStub | null;
+	error?: string;
+}> {
+	return { error: "Billing is not available in self-hosted mode" };
 }
 
 export async function checkInboundGuardAccess() {
@@ -122,19 +109,9 @@ export async function checkInboundGuardAccess() {
 		return { allowed: false, error: "Unauthorized" };
 	}
 
-	const { data: guardCheck, error: guardCheckError } = await autumn.check({
-		customer_id: session.user.id,
-		feature_id: "inbound_guard",
-	});
-
-	if (guardCheckError) {
-		console.error("Error checking inbound_guard access:", guardCheckError);
-		return { allowed: false, error: guardCheckError };
-	}
-
 	return {
-		allowed: guardCheck?.allowed || false,
-		unlimited: guardCheck?.unlimited || false,
+		allowed: true,
+		unlimited: true,
 	};
 }
 
@@ -1071,16 +1048,6 @@ export async function getDomainStats() {
 			return { error: "Unauthorized" };
 		}
 
-		// Check user's domain limits
-		const { data: domainLimits, error: limitsError } = await autumn.check({
-			customer_id: session.user.id,
-			feature_id: "domains",
-		});
-
-		if (limitsError) {
-			console.error("Failed to check domain limits:", limitsError);
-		}
-
 		// Calculate 24 hours ago
 		const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -1146,21 +1113,13 @@ export async function getDomainStats() {
 				(sum, d) => sum + d.emailsLast24h,
 				0,
 			),
-			limits: domainLimits
-				? {
-						allowed: domainLimits.allowed,
-						unlimited: domainLimits.unlimited || false,
-						balance: domainLimits.balance || null,
-						current: transformedDomains.length,
-						remaining:
-							domainLimits.unlimited || false
-								? null
-								: Math.max(
-										0,
-										(domainLimits.balance || 0) - transformedDomains.length,
-									),
-					}
-				: null,
+			limits: {
+				allowed: true,
+				unlimited: true,
+				balance: null,
+				current: transformedDomains.length,
+				remaining: null,
+			},
 		};
 	} catch (error) {
 		console.error("Error fetching domain stats:", error);
