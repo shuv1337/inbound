@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const appHostname = new URL(appUrl).hostname;
+const docsUrl = process.env.DOCS_URL || "https://inbound.mintlify.dev/docs";
 
 const nextConfig: NextConfig = {
 	/* config options here */
@@ -121,6 +122,17 @@ const nextConfig: NextConfig = {
 				source: "/api/v1.1/:path*",
 				destination: "/api/deprecated",
 				permanent: true,
+			},
+			// Redirect /docs to external docs site
+			{
+				source: "/docs",
+				destination: docsUrl,
+				permanent: false,
+			},
+			{
+				source: "/docs/:path*",
+				destination: `${docsUrl}/:path*`,
+				permanent: false,
 			},
 		];
 	},

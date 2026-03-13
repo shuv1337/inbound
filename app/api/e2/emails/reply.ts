@@ -1,5 +1,5 @@
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
-import { waitUntil } from "@vercel/functions";
+
 import { and, eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { nanoid } from "nanoid";
@@ -735,18 +735,16 @@ export const replyToEmail = new Elysia().post(
 				.where(eq(sentEmails.id, replyEmailId));
 
 			// Evaluate email for security risks (non-blocking)
-			waitUntil(
-				evaluateSending(replyEmailId, userId, {
-					from: formattedFromAddress,
-					to: toAddresses,
-					subject: subject,
-					textBody: body.text,
-					htmlBody: body.html,
-				}),
-			);
+			evaluateSending(replyEmailId, userId, {
+				from: formattedFromAddress,
+				to: toAddresses,
+				subject: subject,
+				textBody: body.text,
+				htmlBody: body.html,
+			}).catch((err) => console.error("[background] evaluateSending failed:", err));
 
 			// Check for sending spikes (non-blocking)
-			waitUntil(checkSendingSpike(userId));
+			checkSendingSpike(userId).catch((err) => console.error("[background] checkSendingSpike failed:", err));
 
 			console.log("✅ Reply processing complete");
 			return {

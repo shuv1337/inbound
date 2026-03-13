@@ -1,6 +1,6 @@
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { Client as QStashClient } from "@upstash/qstash";
-import { waitUntil } from "@vercel/functions";
+
 import { and, eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { nanoid } from "nanoid";
@@ -588,18 +588,16 @@ export const sendEmail = new Elysia().post(
 				.where(eq(sentEmails.id, emailId));
 
 			// Evaluate email for security risks (non-blocking)
-			waitUntil(
-				evaluateSending(emailId, userId, {
-					from: body.from,
-					to: body.to,
-					subject: body.subject,
-					textBody: body.text,
-					htmlBody: body.html,
-				}),
-			);
+			evaluateSending(emailId, userId, {
+				from: body.from,
+				to: body.to,
+				subject: body.subject,
+				textBody: body.text,
+				htmlBody: body.html,
+			}).catch((err) => console.error("[background] evaluateSending failed:", err));
 
 			// Check for sending spikes (non-blocking)
-			waitUntil(checkSendingSpike(userId));
+			checkSendingSpike(userId).catch((err) => console.error("[background] checkSendingSpike failed:", err));
 
 			console.log("✅ Email processing complete");
 			return {

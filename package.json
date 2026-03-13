@@ -105,7 +105,7 @@
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/realtime": "^1.0.0",
     "@upstash/redis": "^1.35.7",
-    "@vercel/functions": "^3.1.4",
+
     "ai": "^6.0.3",
     "async_hooks": "^1.0.0",
     "better-auth": "^1.4.4",

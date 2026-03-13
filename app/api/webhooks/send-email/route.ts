@@ -1,6 +1,6 @@
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { Receiver } from "@upstash/qstash";
-import { waitUntil } from "@vercel/functions";
+
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
@@ -488,18 +488,16 @@ async function handleScheduledEmail(payload: QStashPayload) {
 		]);
 
 		// Evaluate email for security risks (non-blocking)
-		waitUntil(
-			evaluateSending(createdSentEmail.id, scheduledEmail.userId, {
-				from: scheduledEmail.fromAddress,
-				to: toAddresses,
-				subject: scheduledEmail.subject,
-				textBody: scheduledEmail.textBody || undefined,
-				htmlBody: scheduledEmail.htmlBody || undefined,
-			}),
-		);
+		evaluateSending(createdSentEmail.id, scheduledEmail.userId, {
+			from: scheduledEmail.fromAddress,
+			to: toAddresses,
+			subject: scheduledEmail.subject,
+			textBody: scheduledEmail.textBody || undefined,
+			htmlBody: scheduledEmail.htmlBody || undefined,
+		}).catch((err) => console.error("[background] evaluateSending failed:", err));
 
 		// Check for sending spikes (non-blocking)
-		waitUntil(checkSendingSpike(scheduledEmail.userId));
+		checkSendingSpike(scheduledEmail.userId).catch((err) => console.error("[background] checkSendingSpike failed:", err));
 
 		console.log("✅ Scheduled email processed successfully:", scheduledEmailId);
 
@@ -853,18 +851,16 @@ async function handleBatchEmail(
 			.where(eq(sentEmails.id, emailId));
 
 		// Evaluate email for security risks (non-blocking)
-		waitUntil(
-			evaluateSending(emailId, effectiveUserId, {
-				from: sentEmail.from,
-				to: toAddresses,
-				subject: sentEmail.subject,
-				textBody: sentEmail.textBody || undefined,
-				htmlBody: sentEmail.htmlBody || undefined,
-			}),
-		);
+		evaluateSending(emailId, effectiveUserId, {
+			from: sentEmail.from,
+			to: toAddresses,
+			subject: sentEmail.subject,
+			textBody: sentEmail.textBody || undefined,
+			htmlBody: sentEmail.htmlBody || undefined,
+		}).catch((err) => console.error("[background] evaluateSending failed:", err));
 
 		// Check for sending spikes (non-blocking)
-		waitUntil(checkSendingSpike(effectiveUserId));
+		checkSendingSpike(effectiveUserId).catch((err) => console.error("[background] checkSendingSpike failed:", err));
 
 		console.log("✅ Batch email processed successfully:", emailId);
 
