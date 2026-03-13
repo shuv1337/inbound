@@ -1,0 +1,50 @@
+{
+  "featureId": "docker-packaging",
+  "reviewedAt": "2026-03-13T08:30:00.000Z",
+  "commitId": "a22ca8b",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Implementation is complete and closely follows the feature specification. All 7 files were created/modified correctly: next.config.ts has standalone output, Dockerfile has proper 3-stage build (deps→builder→runner), .dockerignore excludes the right paths, docker-compose.yml defines all three services with correct configuration, health endpoint at /api/health works with drizzle's sql helper, .env.example covers all critical production env vars organized by category, and .gitignore was updated to allow .env.example. Code style matches project conventions (tabs, @/ imports, no comments).",
+    "issues": [
+      {
+        "file": "Dockerfile",
+        "line": 21,
+        "severity": "non_blocking",
+        "description": "COPY commands don't use --chown=nextjs:nodejs flag. All copied files will be owned by root. The nextjs user can read them (sufficient for Next.js standalone runtime), but if the app ever needs to write to these directories at runtime (e.g., ISR cache, image optimization cache), it would fail. Next.js official standalone Docker example uses --chown. Not blocking since the app likely doesn't need write access to these paths."
+      },
+      {
+        "file": "docker-compose.yml",
+        "line": 36,
+        "severity": "non_blocking",
+        "description": "TUNNEL_URL environment variable is not a functional cloudflared setting when using --config mode. Cloudflared reads origin URLs from the config file's ingress rules, not from this env var. TUNNEL_URL is typically used in 'quick tunnel' mode (cloudflared tunnel --url). Here it serves only as documentation that the config should route to http://app:3000. Not harmful, but operators might mistakenly think changing this env var affects routing."
+      },
+      {
+        "file": ".env.example",
+        "line": null,
+        "severity": "non_blocking",
+        "description": "A few env vars used in the codebase are not documented: NEXT_PUBLIC_API_URL (lib/openapi/spec.ts — OpenAPI server URL), SERVICE_API_URL (deploy scripts), SES_WEBHOOK_URL (SNS subscription script). These are all script-only or secondary vars, so omission is reasonable for a production .env.example focused on app runtime."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The health endpoint at app/api/health/route.ts uses drizzle-orm's sql tagged template (sql`SELECT 1`) for the DB probe. AGENTS.md says 'Drizzle ORM only — no raw SQL', but the sql helper IS the idiomatic drizzle way to run arbitrary queries. The convention wording could be clarified to distinguish between raw string SQL and drizzle's sql`` tagged template helper.",
+      "evidence": "app/api/health/route.ts:7 uses `db.execute(sql`SELECT 1`)`. Other files in the codebase also use `sql` from drizzle-orm (e.g., rg 'import.*sql.*from.*drizzle' shows multiple hits). AGENTS.md line says 'Drizzle ORM only — no raw SQL'."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The cloudflared TUNNEL_URL env var in docker-compose.yml is not functional when using config-file mode. If operators try to change routing by modifying this env var, it won't work — they need to edit the mounted config.yml instead. This operational knowledge should be documented somewhere.",
+      "evidence": "docker-compose.yml:36 sets TUNNEL_URL: http://app:3000 but cloudflared command uses --config /etc/cloudflared/config.yml which overrides env-based URL routing."
+    },
+    {
+      "area": "skills",
+      "observation": "Worker skill 'refactor-worker' was invoked but no SKILL.md file exists at .factory/skills/refactor-worker/SKILL.md. Unable to verify if the worker followed the skill procedure since the skill definition was not found in the repo.",
+      "evidence": "Glob for .factory/skills/refactor-worker/SKILL.md returned no matching files. Transcript shows Skill tool invocation for 'refactor-worker'. handoff.skillFeedback.followedProcedure is true."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The docker-packaging feature implementation is solid and fully satisfies all validation assertions (VAL-DOCKER-001 through VAL-DOCKER-008, VAL-CROSS-001, VAL-CROSS-002). The Dockerfile properly implements 3-stage builds with bun for deps/build and node:22-alpine for runtime. Docker Compose correctly defines app/postgres/cloudflared services with security-conscious 127.0.0.1 port bindings and proper health checks. The health endpoint cleanly probes the database. The .env.example is comprehensive for production use. Three non-blocking issues noted: missing --chown in Dockerfile COPY commands, non-functional TUNNEL_URL env var in cloudflared service, and a few secondary env vars omitted from .env.example. None of these block the feature from working as intended."
+}

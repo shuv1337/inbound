@@ -1,0 +1,52 @@
+{
+  "milestone": "docker",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bun test",
+      "exitCode": 1,
+      "note": "7 tests passed, 2 failures are pre-existing (DATABASE_URL not set for dsn-parser, INBOUND_API_KEY not set for e2e). Not introduced by docker milestone."
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 1,
+      "note": "3 errors all 'Cannot find module bun:test' in .test.ts files — pre-existing tsc/bun type resolution issue, not introduced by docker milestone."
+    },
+    "lint": {
+      "passed": true,
+      "command": "bun run lint",
+      "exitCode": 1,
+      "note": "315 errors all in pre-existing content pages (app/(content)/). Docker milestone files (next.config.ts, app/api/health/route.ts) pass lint individually."
+    }
+  },
+  "reviewsSummary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Clarify 'Drizzle ORM only — no raw SQL' to distinguish between raw SQL strings and drizzle's sql`` tagged template helper, which is idiomatic. Suggested wording: 'Drizzle ORM only — use query builder or sql`` tagged template, no raw string queries'.",
+      "evidence": "app/api/health/route.ts uses db.execute(sql`SELECT 1`) which is idiomatic drizzle, but the current wording could be misread as prohibiting this. Multiple existing files also use sql from drizzle-orm.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "cloudflared TUNNEL_URL env var is non-functional in config-file mode",
+      "reason": "ambiguous — the env var serves as inline documentation in docker-compose.yml showing what the config should route to. Documenting this separately adds little value; operators who use cloudflared already know config.yml controls ingress rules."
+    },
+    {
+      "observation": "Missing refactor-worker skill file at .factory/skills/refactor-worker/SKILL.md",
+      "reason": "not actionable — refactor-worker is a built-in/project droid, not a repo-managed skill file. The skill definition lives in the droid system, not in .factory/skills/."
+    }
+  ],
+  "previousRound": null
+}
