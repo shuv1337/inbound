@@ -30,9 +30,7 @@ import { Badge } from "@/components/ui/badge"
 import { signOut, useSession } from "@/lib/auth/auth-client"
 import { useRouter } from "next/navigation"
 import { isUserAdmin } from "@/lib/navigation"
-import { useEffect, useState } from "react"
-import { getAutumnCustomer } from "@/app/actions/primary"
-import { toCapitalizeFirstLetterOfEachWord } from "@/lib/utils"
+
 
 export function NavUser({
   user,
@@ -47,54 +45,8 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const router = useRouter()
   const { data: session } = useSession()
-  const [subscriptionPlan, setSubscriptionPlan] = useState<string>("Free")
-  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
 
-  // Check if user is admin
   const userIsAdmin = isUserAdmin(session?.user?.role || "user")
-
-  // Fetch user's subscription data from Autumn
-  useEffect(() => {
-    const fetchCustomerData = async () => {
-      if (!session?.user) {
-        setIsLoadingSubscription(false)
-        return
-      }
-
-      try {
-        const response = await getAutumnCustomer()
-
-        if (response.customer) {
-          const customer = response.customer
-
-          // Find active or trialing product
-          const activeProduct = customer.products?.find(
-            product => (product.status === "active" || product.status === "trialing") && !product.canceled_at
-          )
-
-          if (activeProduct) {
-            // Capitalize the product name
-            const planName = activeProduct.name
-              ? activeProduct.name.charAt(0).toUpperCase() + activeProduct.name.slice(1)
-              : "Free"
-            setSubscriptionPlan(planName)
-          } else {
-            setSubscriptionPlan("Free")
-          }
-        } else {
-          console.error("Failed to fetch customer data:", response.error)
-          setSubscriptionPlan("Free")
-        }
-      } catch (error) {
-        console.error("Error fetching customer data:", error)
-        setSubscriptionPlan("Free")
-      } finally {
-        setIsLoadingSubscription(false)
-      }
-    }
-
-    fetchCustomerData()
-  }, [session?.user])
 
   const handleLogout = async () => {
     try {
@@ -103,8 +55,6 @@ export function NavUser({
       console.error("Logout error:", error)
     }
   }
-  const displayPlan = isLoadingSubscription ? "..." : subscriptionPlan
-
   return (
     <SidebarMenu>
       <SidebarMenuItem className="w-full">
@@ -132,7 +82,7 @@ export function NavUser({
                 )}
               </div>
               <span className="truncate text-xs text-muted">
-                {toCapitalizeFirstLetterOfEachWord(displayPlan)} Plan
+                Self-hosted
               </span>
             </div>
             {/* <svg xmlns="http://www.w3.org/2000/svg" width="21" height="20" viewBox="0 0 21 20" fill="none" className="ml-auto size-4">
@@ -167,7 +117,7 @@ export function NavUser({
                     {user.email}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {displayPlan} Plan
+                    Self-hosted
                   </span>
                 </div>
               </div>

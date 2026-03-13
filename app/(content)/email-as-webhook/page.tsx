@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { PricingTable } from "@/components/autumn/pricing-table-format"
+import { PricingTable } from "@/components/pricing-table"
 import ArrowBoldRight from "@/components/icons/arrow-bold-right"
 import Envelope2 from "@/components/icons/envelope-2"
 import Globe2 from "@/components/icons/globe-2"

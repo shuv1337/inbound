@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/sonner"
 import { NavigationProvider } from "@/contexts/navigation-context"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { CommandBar, useCommandBar } from "@/components/command-bar"
-import { FreeTierPaywallModal } from "@/components/free-tier-paywall-modal"
 
 import { EnhancedPageTransition } from "@/components/page-transition"
 import { useSession } from "@/lib/auth/auth-client"
@@ -44,7 +43,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar variant="inset" />
         <SidebarInset>
-          <FreeTierPaywallModal />
           <EnhancedPageTransition direction="fade" className="h-full">
             {children}
           </EnhancedPageTransition>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PricingTable } from "@/components/autumn/pricing-table-format";
+import { PricingTable } from "@/components/pricing-table";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import CustomInboundIcon from "@/components/icons/customInbound";

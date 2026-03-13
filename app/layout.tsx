@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import "./prose.css";
-import { AutumnProvider } from "autumn-js/react";
 import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -244,11 +243,7 @@ export default function RootLayout({
 				<NuqsAdapter>
 					<QueryProvider>
 						<RealtimeProvider>
-							<AutumnProvider
-								backendUrl={process.env.NEXT_PUBLIC_APP_URL || ""}
-							>
-								{children}
-							</AutumnProvider>
+							{children}
 						</RealtimeProvider>
 					</QueryProvider>
 				</NuqsAdapter>

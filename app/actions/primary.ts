@@ -67,39 +67,6 @@ export async function updateUserProfile(formData: FormData) {
 	}
 }
 
-export async function generateAutumnBillingPortal(): Promise<{ url?: string; error?: string }> {
-	return { error: "Billing is not available in self-hosted mode" };
-}
-
-interface CustomerProduct {
-	id: string;
-	name: string;
-	status: string;
-	is_add_on?: boolean;
-	canceled_at?: string | null;
-}
-
-interface CustomerFeature {
-	used?: number;
-	limit?: number;
-	balance?: number;
-	usage?: number;
-	unlimited?: boolean;
-	[key: string]: unknown;
-}
-
-interface CustomerStub {
-	products?: CustomerProduct[];
-	features?: Record<string, CustomerFeature>;
-}
-
-export async function getAutumnCustomer(): Promise<{
-	customer?: CustomerStub | null;
-	error?: string;
-}> {
-	return { error: "Billing is not available in self-hosted mode" };
-}
-
 export async function checkInboundGuardAccess() {
 	const session = await auth.api.getSession({
 		headers: await headers(),

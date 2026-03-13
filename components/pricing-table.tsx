@@ -17,25 +17,25 @@ const plans = [
 		name: "Default",
 		price: 4,
 		description: "5,000 emails/mo · Basic support",
-		autumn_id: "inbound_default_test",
+		id: "inbound_default_test",
 	},
 	{
 		name: "Pro",
 		price: 15,
 		description: "50,000 emails/mo · 50 domains",
-		autumn_id: "pro",
+		id: "pro",
 	},
 	{
 		name: "Growth",
 		price: 39,
 		description: "100,000 emails/mo · 200 domains",
-		autumn_id: "growth",
+		id: "growth",
 	},
 	{
 		name: "Scale",
 		price: 79,
 		description: "200,000 emails/mo · 500 domains",
-		autumn_id: "scale",
+		id: "scale",
 	},
 ];
 
@@ -74,8 +74,8 @@ export function PricingTable({
 
 	const isDowngrade = (plan: (typeof plans)[0]) => {
 		if (!currentPlan) return false;
-		const currentIndex = plans.findIndex((p) => p.autumn_id === currentPlan);
-		const targetIndex = plans.findIndex((p) => p.autumn_id === plan.autumn_id);
+		const currentIndex = plans.findIndex((p) => p.id === currentPlan);
+		const targetIndex = plans.findIndex((p) => p.id === plan.id);
 		return currentIndex > targetIndex;
 	};
 
@@ -99,7 +99,7 @@ export function PricingTable({
 								key={plan.name}
 								onClick={() => handlePlanClick(plan)}
 								disabled={
-									isLoading === plan.autumn_id || currentPlan === plan.autumn_id
+									isLoading === plan.id || currentPlan === plan.id
 								}
 								className="group w-full flex justify-between items-center py-3 border-b border-[#e7e5e4] text-left hover:bg-white/50 transition-colors disabled:opacity-50"
 							>
@@ -108,7 +108,7 @@ export function PricingTable({
 										<span className="text-[#1c1917] font-medium">
 											{plan.name}
 										</span>
-										{currentPlan === plan.autumn_id && (
+										{currentPlan === plan.id && (
 											<span className="text-xs text-[#78716c]">· Current</span>
 										)}
 									</div>
@@ -117,7 +117,7 @@ export function PricingTable({
 									</p>
 								</div>
 								<div className="flex items-center gap-4">
-									{isLoading === plan.autumn_id ? (
+									{isLoading === plan.id ? (
 										<div className="w-4 h-4 border-2 border-[#8161FF] border-t-transparent rounded-full animate-spin" />
 									) : (
 										<span className="text-[#1c1917] font-medium">
