@@ -1,0 +1,153 @@
+{
+  "groupId": "docker-files",
+  "testedAt": "2026-03-13T00:00:00.000Z",
+  "isolation": {
+    "workingDirectory": "/home/shuv/repos/inbound",
+    "method": "file-inspection",
+    "notes": "No runtime services needed — all checks are file-based"
+  },
+  "toolsUsed": ["Read", "Grep", "Glob"],
+  "assertions": [
+    {
+      "id": "VAL-DOCKER-001",
+      "title": "Dockerfile exists with multi-stage build",
+      "status": "pass",
+      "steps": [
+        { "action": "Read Dockerfile at repo root", "expected": "Dockerfile exists", "observed": "Dockerfile exists at /home/shuv/repos/inbound/Dockerfile" },
+        { "action": "Check for deps stage", "expected": "Stage with Bun install", "observed": "FROM oven/bun:1 AS deps — runs bun install --frozen-lockfile" },
+        { "action": "Check for builder stage", "expected": "Stage with Bun build", "observed": "FROM oven/bun:1 AS builder — runs bun run build" },
+        { "action": "Check for runner stage", "expected": "Node 22 Alpine runtime with standalone output", "observed": "FROM node:22-alpine AS runner — copies .next/standalone and runs node server.js" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "Dockerfile: 3 stages (deps, builder, runner). deps: oven/bun:1, bun install --frozen-lockfile. builder: oven/bun:1, bun run build. runner: node:22-alpine, copies standalone output, runs as nextjs user on port 3000."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-002",
+      "title": ".dockerignore exists",
+      "status": "pass",
+      "steps": [
+        { "action": "Check .dockerignore exists at repo root", "expected": "File exists", "observed": ".dockerignore exists at repo root" },
+        { "action": "Verify node_modules excluded", "expected": "node_modules in ignore list", "observed": "node_modules is listed" },
+        { "action": "Verify .git excluded", "expected": ".git in ignore list", "observed": ".git is listed" },
+        { "action": "Verify .next excluded", "expected": ".next in ignore list", "observed": ".next is listed" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": ".dockerignore contents: node_modules, .git, .next, .env*, *.md, !README.md, aws/, .factory/"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-003",
+      "title": "docker-compose.yml defines app, postgres, cloudflared",
+      "status": "pass",
+      "steps": [
+        { "action": "Read docker-compose.yml", "expected": "File exists with 3 services", "observed": "File exists with app, postgres, cloudflared services" },
+        { "action": "Check app service config", "expected": "build from Dockerfile, env_file, depends_on postgres healthy", "observed": "app: build context=., dockerfile=Dockerfile, env_file=.env.production, depends_on postgres condition=service_healthy" },
+        { "action": "Check postgres service config", "expected": "health check, volume", "observed": "postgres: image postgres:16-alpine, healthcheck with pg_isready, volume pgdata:/var/lib/postgresql/data" },
+        { "action": "Check cloudflared service config", "expected": "tunnel config mount", "observed": "cloudflared: image cloudflare/cloudflared:2026.2.1, volumes /opt/inbound/cloudflared:/etc/cloudflared:ro" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "docker-compose.yml: 3 services (app, postgres, cloudflared). app builds from Dockerfile with env_file .env.production, depends_on postgres healthy. postgres uses postgres:16-alpine with pg_isready healthcheck and pgdata volume. cloudflared mounts /opt/inbound/cloudflared as config."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-004",
+      "title": "Standalone output enabled",
+      "status": "pass",
+      "steps": [
+        { "action": "Read next.config.ts", "expected": "output: 'standalone' present", "observed": "Line: output: \"standalone\" found in nextConfig object" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "next.config.ts line 8: output: \"standalone\""
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-005",
+      "title": "Runtime content dirs copied in Dockerfile",
+      "status": "pass",
+      "steps": [
+        { "action": "Check Dockerfile for changelog/entries copy", "expected": "COPY statement for app/changelog/entries/", "observed": "COPY --from=builder /app/app/changelog/entries ./app/changelog/entries" },
+        { "action": "Check Dockerfile for blog/images copy", "expected": "COPY statement for content/blog/images/", "observed": "COPY --from=builder /app/content/blog/images ./content/blog/images" },
+        { "action": "Check Dockerfile for public/ copy", "expected": "COPY statement for public/", "observed": "COPY --from=builder /app/public ./public" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "Dockerfile runner stage lines: COPY --from=builder /app/public ./public, COPY --from=builder /app/app/changelog/entries ./app/changelog/entries, COPY --from=builder /app/content/blog/images ./content/blog/images"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-006",
+      "title": "Health endpoint exists",
+      "status": "pass",
+      "steps": [
+        { "action": "Check for health route file", "expected": "app/api/health/route.ts exists", "observed": "app/api/health/route.ts exists" },
+        { "action": "Verify DB connectivity check", "expected": "Route checks DB and returns 200 when healthy", "observed": "GET handler executes db.execute(sql`SELECT 1`), returns {status:'ok',db:'connected'} with 200 on success, {status:'error',db:'disconnected'} with 500 on failure" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "app/api/health/route.ts: exports GET handler, tries db.execute(sql`SELECT 1`), returns 200 {status:'ok',db:'connected'} or 500 {status:'error',db:'disconnected'}"
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-007",
+      "title": ".env.example exists",
+      "status": "pass",
+      "steps": [
+        { "action": "Check .env.example exists at repo root", "expected": "File exists", "observed": ".env.example exists at repo root" },
+        { "action": "Verify DATABASE_URL", "expected": "Present", "observed": "DATABASE_URL=postgresql://inbound:changeme@postgres:5432/inbound" },
+        { "action": "Verify NEXT_PUBLIC_APP_URL", "expected": "Present", "observed": "NEXT_PUBLIC_APP_URL=https://mail.example.com" },
+        { "action": "Verify INTERNAL_BASE_URL", "expected": "Present", "observed": "INTERNAL_BASE_URL=http://127.0.0.1:3000" },
+        { "action": "Verify BETTER_AUTH_SECRET", "expected": "Present", "observed": "BETTER_AUTH_SECRET=generate-a-random-secret-here" },
+        { "action": "Verify CRON_SECRET", "expected": "Present", "observed": "CRON_SECRET=generate-a-random-secret-here" },
+        { "action": "Verify QSTASH_TOKEN", "expected": "Present", "observed": "QSTASH_TOKEN=" },
+        { "action": "Verify QSTASH_CURRENT_SIGNING_KEY", "expected": "Present", "observed": "QSTASH_CURRENT_SIGNING_KEY=" },
+        { "action": "Verify QSTASH_NEXT_SIGNING_KEY", "expected": "Present", "observed": "QSTASH_NEXT_SIGNING_KEY=" },
+        { "action": "Verify AWS credentials", "expected": "AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME present", "observed": "All present" },
+        { "action": "Verify SERVICE_API_KEY, INBOUND_API_KEY", "expected": "Present", "observed": "Both present" },
+        { "action": "Verify Redis vars", "expected": "UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN present", "observed": "Both present" },
+        { "action": "Verify SVIX_API_KEY", "expected": "Present", "observed": "Present in optional section" },
+        { "action": "Verify contact emails", "expected": "SUPPORT_EMAIL, LEGAL_EMAIL, USAGE_REPORT_TO present", "observed": "All present" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": ".env.example: All required env vars present — DATABASE_URL, NEXT_PUBLIC_APP_URL, INTERNAL_BASE_URL, BETTER_AUTH_SECRET, CRON_SECRET, QSTASH_TOKEN, QSTASH_CURRENT_SIGNING_KEY, QSTASH_NEXT_SIGNING_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME, SERVICE_API_KEY, INBOUND_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, SVIX_API_KEY (optional), SUPPORT_EMAIL, LEGAL_EMAIL, USAGE_REPORT_TO. Includes sections: App, Database, Auth, Contact/Notifications, Redis, AWS, QStash, SDK, Cron/Webhooks, Optional."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-DOCKER-008",
+      "title": "Docker services share network",
+      "status": "pass",
+      "steps": [
+        { "action": "Check docker-compose.yml for network sharing", "expected": "Services share a Docker network (default or explicit)", "observed": "All 3 services defined in same docker-compose.yml — they share the default network automatically" },
+        { "action": "Check cloudflared references app by service name", "expected": "http://app:3000 (not localhost)", "observed": "cloudflared has TUNNEL_URL: http://app:3000 — references app by Docker service name" }
+      ],
+      "evidence": {
+        "screenshots": [],
+        "consoleErrors": "N/A — file inspection only",
+        "fileContents": "docker-compose.yml: No explicit network defined, so all services share the default network. cloudflared environment has TUNNEL_URL: http://app:3000, referencing app by Docker service name."
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [],
+  "blockers": [],
+  "summary": "Tested 8 assertions: all 8 passed. Dockerfile has proper 3-stage build (deps/builder/runner), .dockerignore excludes required paths, docker-compose.yml defines all 3 services correctly, standalone output is enabled, runtime content dirs are copied, health endpoint checks DB connectivity, .env.example documents all required vars, and services share network with proper service-name references."
+}
