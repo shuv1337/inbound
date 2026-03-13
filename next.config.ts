@@ -5,8 +5,8 @@ const appHostname = new URL(appUrl).hostname;
 const docsUrl = process.env.DOCS_URL || "https://inbound.mintlify.dev/docs";
 
 const nextConfig: NextConfig = {
-	/* config options here */
-	// Add Turbopack configuration to suppress warnings
+	output: "standalone",
+
 	turbopack: {
 		// Empty configuration to acknowledge Turbopack usage
 	},
