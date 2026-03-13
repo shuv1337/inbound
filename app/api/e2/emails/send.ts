@@ -2,6 +2,7 @@ import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { Client as QStashClient } from "@upstash/qstash";
 
 import { and, eq } from "drizzle-orm";
+import { APP_URL } from "@/lib/config/app-url";
 import { Elysia, t } from "elysia";
 import { nanoid } from "nanoid";
 import {
@@ -379,7 +380,7 @@ export const sendEmail = new Elysia().post(
 					token: process.env.QSTASH_TOKEN!,
 				});
 
-				const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/send-email`;
+				const webhookUrl = `${APP_URL}/api/webhooks/send-email`;
 				const notBefore = Math.floor(parsedDate.date.getTime() / 1000);
 
 				console.log("📅 Scheduling with QStash:", {
