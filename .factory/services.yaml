@@ -1,0 +1,12 @@
+commands:
+  install: bun install
+  lint: bun run lint
+  typecheck: tsc --noEmit
+  build: bun run build
+  test: bun test
+  test-e2: bun run test:e2
+  generate-openapi: bun run generate:openapi
+
+# No services needed during development — this is a code-changes-only mission.
+# Workers edit code and run lint/typecheck only.
+services: {}
