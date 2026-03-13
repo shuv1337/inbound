@@ -1,0 +1,56 @@
+{
+  "groupId": "auth-sdk-cross-assertions",
+  "assertions": {
+    "VAL-AUTH-001": {
+      "status": "pass",
+      "evidence": "grep 'VERCEL_' in lib/auth/auth.ts returned zero matches. File imports APP_URL from @/lib/config/app-url and uses it for baseURL. No VERCEL_ENV, VERCEL_URL, or VERCEL_BRANCH_URL references exist."
+    },
+    "VAL-AUTH-002": {
+      "status": "pass",
+      "evidence": "GitHub redirectURI is `${APP_URL}/api/auth/callback/github` (line ~91) and Google redirectURI is `${APP_URL}/api/auth/callback/google` (line ~97). Both use template literals with APP_URL from config. No hardcoded URLs."
+    },
+    "VAL-AUTH-003": {
+      "status": "pass",
+      "evidence": "Passkey rpID uses PASSKEY_RP_ID imported from @/lib/config/app-url (which is `new URL(APP_URL).hostname`). origin uses PASSKEY_ORIGIN (which equals APP_URL). grep 'inbound.new' in lib/auth/auth.ts returned zero matches."
+    },
+    "VAL-AUTH-004": {
+      "status": "pass",
+      "evidence": "Magic link 'from' uses template `Inbound <noreply@notifications.${NOTIFICATION_DOMAIN}>` where NOTIFICATION_DOMAIN is derived from APP_URL hostname in config. reply_to uses `SUPPORT_EMAIL || \\`support@${NOTIFICATION_DOMAIN}\\``. grep '@inbound.new' in lib/auth/auth.ts returned zero matches."
+    },
+    "VAL-AUTH-005": {
+      "status": "pass",
+      "evidence": "trustedOrigins array is `[APP_URL, 'http://localhost:3000']` (line ~82). APP_URL is config-driven from NEXT_PUBLIC_APP_URL env var. The only hardcoded URL is localhost:3000 for dev, which is expected."
+    },
+    "VAL-AUTH-006": {
+      "status": "pass",
+      "evidence": "lib/auth/auth-client.ts uses `window.location.origin` on client-side and `process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'` for SSR fallback. grep 'inbound.new' returned zero matches. No hardcoded production domain."
+    },
+    "VAL-SDK-001": {
+      "status": "pass",
+      "evidence": "lib/inbound-client.ts exports getInboundClient() which returns a singleton Inbound instance configured with apiKey from process.env.INBOUND_API_KEY and baseURL from INTERNAL_APP_URL (imported from @/lib/config/app-url)."
+    },
+    "VAL-SDK-002": {
+      "status": "pass",
+      "evidence": "rg 'new Inbound(' found 3 hits: (1) lib/inbound-client.ts:8 - the shared client (correct), (2) app/api/e2/[[...slugs]]/route.ts:145 - inside a markdown code block (documentation sample, not runtime), (3) app/changelog/entries/2025-01-20-sdk-v2-release.mdx:20 - changelog content (not runtime). All runtime instantiation uses getInboundClient()."
+    },
+    "VAL-SDK-003": {
+      "status": "pass",
+      "evidence": "lib/inbound-client.ts sets baseURL to INTERNAL_APP_URL which is imported from @/lib/config/app-url. In config, INTERNAL_APP_URL = process.env.INTERNAL_BASE_URL || APP_URL, enabling tunnel hairpin avoidance for server-to-self calls."
+    },
+    "VAL-CROSS-003": {
+      "status": "pass",
+      "evidence": "lib/config/app-url.ts has zero imports from lib/auth/, lib/db/, or app/. It only reads process.env variables (NEXT_PUBLIC_APP_URL, INTERNAL_BASE_URL, DOCS_URL, SUPPORT_EMAIL, LEGAL_EMAIL) and exports derived constants. No circular dependency risk."
+    },
+    "VAL-CROSS-006": {
+      "status": "pass",
+      "evidence": "lib/auth/auth.ts imports {APP_URL, NOTIFICATION_DOMAIN, PASSKEY_ORIGIN, PASSKEY_RP_ID, SUPPORT_EMAIL} from '@/lib/config/app-url' (line 15). lib/inbound-client.ts imports {INTERNAL_APP_URL} from '@/lib/config/app-url' (line 2). Both use the same config module."
+    },
+    "VAL-VERCEL-004": {
+      "status": "pass",
+      "evidence": "rg 'VERCEL_' across lib/, app/api/, and app/actions/ returned zero matches in all three directories. grep 'VERCEL_' in next.config.ts also returned zero matches. No VERCEL_* env var references remain in runtime code or config."
+    }
+  },
+  "frictions": [],
+  "blockers": [],
+  "toolsUsed": ["grep", "file-read", "ripgrep-cli"]
+}

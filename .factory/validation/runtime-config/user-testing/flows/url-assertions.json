@@ -1,0 +1,48 @@
+{
+  "groupId": "url-assertions",
+  "assertions": {
+    "VAL-URL-001": {
+      "status": "pass",
+      "evidence": "lib/config/app-url.ts exists and exports APP_URL, INTERNAL_APP_URL, API_BASE_URL, DOCS_URL, SUPPORT_EMAIL, LEGAL_EMAIL, PASSKEY_RP_ID, PASSKEY_ORIGIN, plus NOTIFICATION_DOMAIN. No fallback to 'inbound.new' anywhere — APP_URL falls back to 'http://localhost:3000', DOCS_URL falls back to '${APP_URL}/docs', SUPPORT_EMAIL and LEGAL_EMAIL fall back to empty string. grep for 'inbound.new' in lib/config/ returned zero results."
+    },
+    "VAL-URL-002": {
+      "status": "pass",
+      "evidence": "rg 'inbound\\.new' lib/ app/api/ app/actions/ app/vercel-oss-program/ emails/ components/email-banner.tsx --glob '!*.test.ts' returned zero results. The only matches in the search scope were in app/api/e2/e2e.test.ts (a test file, which is exempt)."
+    },
+    "VAL-URL-003": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' across app/layout.tsx, app/sitemap.ts, app/robots.ts, app/manifest.ts, app/changelog/opengraph-image.tsx returned zero results. app/page/metadata.ts was also checked with zero results (file may not exist or has no matches)."
+    },
+    "VAL-URL-004": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' in app/api/e2/[[...slugs]]/route.ts returned zero results. OpenAPI server URL no longer contains hardcoded 'inbound.new'."
+    },
+    "VAL-URL-005": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' in lib/webhooks/webhook-formats.ts returned zero results. Icon/favicon URLs now use config-driven values."
+    },
+    "VAL-URL-006": {
+      "status": "pass",
+      "evidence": "rg '@inbound.new' across lib/ app/api/ app/actions/ (excluding test files) returned zero results. All runtime email sender addresses use config-driven domains. Only test files (app/api/e2/e2e.test.ts) still reference @inbound.new, which are exempt."
+    },
+    "VAL-URL-007": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' in next.config.ts returned zero results. Image remotePatterns and CORS headers no longer contain hardcoded 'inbound.new'."
+    },
+    "VAL-URL-008": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' emails/ returned zero results. All transactional email templates and emails/utils.ts logo/wordmark URLs use config-driven base URLs."
+    },
+    "VAL-URL-009": {
+      "status": "pass",
+      "evidence": "Checked all 9 listed files individually: lib/email-management/email-forwarder.ts, lib/email-management/sending-spike-detector.ts, lib/aws-ses/aws-ses-tenants.ts, lib/utils/zone-file-generator.ts, lib/openapi/spec.ts, app/api/inbound/health/tenant/route.ts, app/api/deprecated/route.ts, app/api/e2/onboarding/demo.ts, components/email-banner.tsx — all returned zero matches for 'inbound.new'."
+    },
+    "VAL-URL-010": {
+      "status": "pass",
+      "evidence": "rg 'inbound.new' in app/api/e2/[[...slugs]]/route.ts returned zero results. Example URLs, documentation links, and deprecation warnings all use APP_URL from config."
+    }
+  },
+  "frictions": [],
+  "blockers": [],
+  "toolsUsed": ["grep", "file-read"]
+}
