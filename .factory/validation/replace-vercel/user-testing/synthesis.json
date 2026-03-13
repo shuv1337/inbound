@@ -1,0 +1,41 @@
+{
+  "milestone": "replace-vercel",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": ["VAL-VERCEL-001", "VAL-VERCEL-002", "VAL-VERCEL-003"],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "evidence": {
+    "VAL-VERCEL-001": {
+      "method": "grep",
+      "commands": [
+        "rg 'waitUntil' app/ — exit code 1 (zero matches)",
+        "rg 'evaluateSending|checkSendingSpike' app/api/e2/emails/send.ts app/api/e2/emails/reply.ts app/api/webhooks/send-email/route.ts — confirmed fire-and-forget .catch() pattern in all three files"
+      ],
+      "conclusion": "waitUntil fully removed from app/. Background tasks (evaluateSending, checkSendingSpike) still execute via fire-and-forget with .catch(err => console.error(...)) pattern."
+    },
+    "VAL-VERCEL-002": {
+      "method": "grep",
+      "commands": [
+        "rg '@vercel/functions' app/ lib/ package.json — exit code 1 (zero matches)"
+      ],
+      "conclusion": "@vercel/functions completely removed from all source files and package.json."
+    },
+    "VAL-VERCEL-003": {
+      "method": "grep+file-contents",
+      "commands": [
+        "rg 'redirect|rewrite|docs' next.config.ts — found /docs and /docs/:path* redirect entries using configurable docsUrl variable"
+      ],
+      "conclusion": "/docs redirect implemented in next.config.ts redirects() using configurable docsUrl (from DOCS_URL env var with fallback to mintlify docs)."
+    }
+  },
+  "appliedUpdates": [],
+  "previousRound": null,
+  "notes": "No runtime testing surface available. Validation performed via grep-based evidence gathering as documented in .factory/library/user-testing.md."
+}
