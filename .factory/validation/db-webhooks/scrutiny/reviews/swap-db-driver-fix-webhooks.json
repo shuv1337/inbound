@@ -1,0 +1,50 @@
+{
+  "featureId": "swap-db-driver-fix-webhooks",
+  "reviewedAt": "2026-03-13T08:30:00.000Z",
+  "commitId": "019311b",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 5 validation assertions are satisfied. The DB driver swap from Neon HTTP to node-postgres is correct — lib/db/index.ts uses drizzle-orm/node-postgres with pg Pool, @neondatabase/serverless is removed from package.json, and drizzle.config.ts remains valid (standard postgresql dialect with url credential). The QStash callback URL in send.ts correctly uses APP_URL from lib/config/app-url.ts instead of process.env.NEXT_PUBLIC_APP_URL. The CRON_SECRET auth check in daily-usage/route.ts exactly matches the existing assertCronAuthorized pattern from aws-stats-alert/route.ts. No new lint or type errors introduced (all failures are pre-existing). bun.lockb was updated after dependency removal.",
+    "issues": [
+      {
+        "file": "app/api/e2/emails/send.ts",
+        "line": 5,
+        "severity": "non_blocking",
+        "description": "APP_URL import (local module) is placed between external package imports (drizzle-orm on line 4 and elysia on line 6). Per AGENTS.md import ordering convention (external -> local -> types), it should be grouped with other local module imports below the external ones. Minor style nit."
+      },
+      {
+        "file": "app/api/webhooks/daily-usage/route.ts",
+        "line": 14,
+        "severity": "non_blocking",
+        "description": "assertCronAuthorized function is duplicated verbatim from aws-stats-alert/route.ts. Feature description suggested 'Consider extracting a shared cron auth helper if the pattern is identical.' The code IS identical across both files. Extraction to a shared utility (e.g., lib/webhooks/cron-auth.ts) would reduce duplication. Not blocking since the description said 'consider' not 'must'."
+      },
+      {
+        "file": "lib/db/index.ts",
+        "line": 9,
+        "severity": "non_blocking",
+        "description": "File lacks a trailing newline. This was pre-existing from the original file (diff shows 'No newline at end of file' in both old and new versions)."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The assertCronAuthorized cron auth pattern is now duplicated in two webhook route files (daily-usage and aws-stats-alert). If more cron endpoints are added, this pattern should be documented in AGENTS.md or extracted to a shared utility. Currently neither AGENTS.md nor mission AGENTS.md mention this pattern.",
+      "evidence": "app/api/webhooks/daily-usage/route.ts:14-26 and app/api/webhooks/aws-stats-alert/route.ts:7-19 contain identical assertCronAuthorized implementations."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The worker correctly identified that tsc --noEmit has 3 pre-existing failures in test files (dsn-parser.test.ts, inbound-dedupe.test.ts, rate-tracker.test.ts) due to missing bun:test type declarations. This baseline knowledge is not documented in .factory/library/ but would save future workers from investigating the same thing.",
+      "evidence": "Transcript shows worker ran tsc --noEmit, got errors, then verified they're pre-existing by stashing and re-running. Handoff discoveredIssues documents this."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The worker found that bun run lint has 315 pre-existing errors and 969 warnings. This baseline state is not documented in .factory/library/ — future workers would benefit from knowing this is expected.",
+      "evidence": "Transcript shows worker ran bun run lint, then ran biome lint on specific modified files to confirm no new errors were introduced. Handoff discoveredIssues documents this."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. All 5 validation assertions (VAL-DB-001 through VAL-WEBHOOK-002) are satisfied. The implementation is clean, correct, and follows existing patterns. The DB driver swap uses drizzle-orm/node-postgres with pg Pool as specified. The QStash callback URL correctly uses the server-side APP_URL config. The CRON_SECRET auth mirrors the existing aws-stats-alert pattern identically. No new errors introduced. Three non-blocking issues noted: minor import ordering in send.ts, duplicated cron auth function (extraction suggested but not required), and pre-existing missing trailing newline in db/index.ts."
+}

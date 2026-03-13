@@ -1,0 +1,52 @@
+{
+  "milestone": "db-webhooks",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bun test",
+      "exitCode": 1,
+      "note": "Pre-existing failures only: dsn-parser.test.ts fails due to missing DATABASE_URL env var, e2e.test.ts fails due to missing INBOUND_API_KEY. Unit tests that don't require external services (inbound-dedupe: 4 pass, rate-tracker: 3 pass) all pass. Same baseline as all prior milestones."
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 1,
+      "note": "Only 3 pre-existing errors: bun:test module declarations in test files (dsn-parser.test.ts, inbound-dedupe.test.ts, rate-tracker.test.ts). No new type errors introduced. Same baseline as all prior milestones."
+    },
+    "lint": {
+      "passed": true,
+      "command": "bun run lint",
+      "exitCode": 1,
+      "note": "315 pre-existing errors + 969 warnings across 651 files, all in content pages. No new lint errors introduced by this milestone. Same baseline as remove-autumn and replace-vercel milestones."
+    }
+  },
+  "reviewsSummary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Document the assertCronAuthorized pattern for webhook endpoint auth: when adding cron-triggered webhook endpoints, include an assertCronAuthorized function that validates Authorization: Bearer ${CRON_SECRET}. Consider extracting to a shared utility (e.g., lib/webhooks/cron-auth.ts) since the pattern is now duplicated in two files.",
+      "evidence": "app/api/webhooks/daily-usage/route.ts and app/api/webhooks/aws-stats-alert/route.ts contain identical assertCronAuthorized implementations. If future milestones add more cron endpoints, this duplication will grow.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "Pre-existing tsc errors (bun:test module resolution) should be documented in library",
+      "reason": "Already documented in runtime-config, remove-autumn, and replace-vercel synthesis reports. Workers consistently discover and verify this baseline. Not worth a separate library entry — it's well-established context."
+    },
+    {
+      "observation": "Pre-existing lint errors (315 errors, 969 warnings) should be documented in library",
+      "reason": "Already documented in all three prior milestone syntheses. Same baseline count across milestones. Workers know to verify by running lint on specific modified files."
+    }
+  ],
+  "previousRound": null
+}
