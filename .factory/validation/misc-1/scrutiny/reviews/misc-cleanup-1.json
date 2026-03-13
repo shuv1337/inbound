@@ -1,0 +1,44 @@
+{
+  "featureId": "misc-cleanup-1",
+  "reviewedAt": "2026-03-13T09:05:00.000Z",
+  "commitId": "4814f0e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 11 cleanup items from the feature description are correctly implemented, plus justified bonus cleanup of dead autumn hooks/components that were causing tsc errors. Key changes: (1) SUPPORT_EMAIL correctly reordered below NOTIFICATION_DOMAIN declaration to use it as default. (2) apiKey field removed from SendDemoEmailBody and both callers updated. (3) lib/autumn/ deleted. (4) Customer type removed from settings types. (5) scripts/autumn-upgrade-analysis.ts deleted. (6) .cursor/rules/autumn-pricing.mdc deleted. (7) Autumn billing comment removed from warmup-limits.ts. (8) assertCronAuthorized extracted to lib/webhooks/cron-auth.ts with both consumers importing the shared utility; NextResponse import correctly removed from daily-usage (which only uses bare Response). (9) All 5 Dockerfile COPY commands have --chown=nextjs:nodejs. (10) TUNNEL_URL removed from docker-compose.yml with explanatory comment. (11) NEXT_PUBLIC_API_URL, SERVICE_API_URL, SES_WEBHOOK_URL added to .env.example with appropriate comments. Additional cleanup of components/autumn/, useCustomerQuery.ts, and useBillingMutation.ts was justified since they referenced deleted functions and caused tsc errors.",
+    "issues": [
+      {
+        "file": "components/free-tier-paywall-modal.tsx",
+        "line": 5,
+        "severity": "non_blocking",
+        "description": "Pre-existing: still imports from 'autumn-js/react' (useCustomer). Not in this feature's scope, but remains as a dangling autumn-js reference in the codebase."
+      },
+      {
+        "file": "app/api/autumn/[...all]/route.ts",
+        "line": null,
+        "severity": "non_blocking",
+        "description": "Pre-existing: autumn API route still exists. Not in this feature's scope, but is another remaining autumn-js reference."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The worker removed the NextResponse import from daily-usage/route.ts because it was only used by the now-extracted assertCronAuthorized. This is correct since daily-usage uses bare `new Response()`. The refactor-worker skill could mention verifying that extracted utilities carry their own imports so consumers can drop unused ones.",
+      "evidence": "app/api/webhooks/daily-usage/route.ts diff: removed `import { NextResponse } from 'next/server'`; lib/webhooks/cron-auth.ts imports NextResponse itself."
+    },
+    {
+      "area": "skills",
+      "observation": "Worker's skillFeedback suggests the refactor-worker skill should mention checking for callers/consumers when modifying schemas. This is valid — removing apiKey from SendDemoEmailBody required updating 2 separate page files (onboarding/page.tsx and onboarding-demo/page.tsx). The skill's step 1 says 'grep the codebase to find ALL instances' but could be more explicit about schema consumers.",
+      "evidence": "Handoff skillFeedback.suggestedChanges: 'The refactor-worker skill could mention checking for callers/consumers when modifying schemas (like removing apiKey from the schema required updating 2 caller files too).'"
+    },
+    {
+      "area": "conventions",
+      "observation": "Mission AGENTS.md documents SUPPORT_EMAIL in the 'Central URL Config' section listing exports of lib/config/app-url.ts. The new default value (support@NOTIFICATION_DOMAIN) is a behavioral change worth noting — AGENTS.md could mention defaults depend on NOTIFICATION_DOMAIN for self-hosters.",
+      "evidence": "lib/config/app-url.ts:25-26 — SUPPORT_EMAIL now defaults to `support@${NOTIFICATION_DOMAIN}` instead of empty string."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "All 11 cleanup items implemented correctly with proper code organization. The assertCronAuthorized extraction to a shared utility is clean — definition in lib/webhooks/cron-auth.ts, both consumers import it, and the unused NextResponse import was correctly cleaned from daily-usage. SUPPORT_EMAIL reordering to be below NOTIFICATION_DOMAIN is necessary and correct. Dockerfile --chown additions follow best practice. Bonus cleanup of dead autumn hooks/components was justified by tsc errors. Two non-blocking observations: remaining autumn-js references in free-tier-paywall-modal.tsx and app/api/autumn/ route are out of scope but should be addressed in a future cleanup."
+}

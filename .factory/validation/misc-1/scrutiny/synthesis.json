@@ -1,0 +1,65 @@
+{
+  "milestone": "misc-1",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bun test",
+      "exitCode": 1,
+      "note": "Exit code 1 due to missing DATABASE_URL and INBOUND_API_KEY env vars (no DB/services in this env). Unit tests that don't require external services pass (inbound-dedupe: 4/4, rate-tracker: 3/3). Pre-existing, not introduced by misc-1."
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 1,
+      "note": "Exit code 1 from 3 test files importing 'bun:test' which tsc cannot resolve. Pre-existing issue unrelated to misc-1 changes. All production code typechecks cleanly."
+    },
+    "lint": {
+      "passed": true,
+      "command": "bun run lint",
+      "exitCode": 1,
+      "note": "316 errors and 963 warnings across 654 files — all pre-existing. Files changed in misc-cleanup-1 were checked individually: the only new file (lib/webhooks/cron-auth.ts) has zero lint issues. All errors in modified files (onboarding/page.tsx, daily-usage/route.ts, etc.) are pre-existing."
+    }
+  },
+  "reviewsSummary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "skills",
+      "suggestion": "Refactor-worker skill step 1 could be more explicit about verifying that extracted utilities carry their own imports, so consumer files can drop now-unused imports after extraction.",
+      "evidence": "In misc-cleanup-1, the worker correctly removed NextResponse import from daily-usage/route.ts after extracting assertCronAuthorized to lib/webhooks/cron-auth.ts (which imports NextResponse itself). The skill says 'grep the codebase to find ALL instances' but doesn't specifically mention import cleanup in consumer files after extraction.",
+      "isSystemic": false
+    },
+    {
+      "target": "skills",
+      "suggestion": "Refactor-worker skill could mention checking for callers/consumers when modifying API schemas — removing a field from a request body schema requires updating all call sites.",
+      "evidence": "Removing apiKey from SendDemoEmailBody schema in demo.ts required updating 2 separate page files (onboarding/page.tsx and onboarding-demo/page.tsx). Worker handled it correctly but noted the skill could be more explicit.",
+      "isSystemic": false
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "In the 'Central URL Config' section, note that SUPPORT_EMAIL defaults to support@${NOTIFICATION_DOMAIN} (not empty string), so self-hosters get a reasonable default even without setting the env var explicitly.",
+      "evidence": "lib/config/app-url.ts was updated in misc-cleanup-1 to change SUPPORT_EMAIL default from '' to `support@${NOTIFICATION_DOMAIN}`. Current AGENTS.md lists SUPPORT_EMAIL as an export but doesn't mention its default value.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [],
+  "knownPreExistingIssues": [
+    {
+      "description": "components/free-tier-paywall-modal.tsx still exists and imports from autumn-js/react. Related to pending VAL-AUTUMN-005.",
+      "source": "misc-cleanup-1 review"
+    },
+    {
+      "description": "app/api/autumn/[...all]/route.ts still exists. Related to pending VAL-AUTUMN-004 (marked passed but file remains).",
+      "source": "misc-cleanup-1 review"
+    }
+  ],
+  "previousRound": null
+}
