@@ -1,0 +1,44 @@
+{
+  "featureId": "remove-autumn-backend",
+  "reviewedAt": "2026-03-13T07:50:00.000Z",
+  "commitId": "82859c3",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All Autumn backend integration was properly removed across 16 files. The diff shows clean removal of autumn-js imports from all 11 handler files, all autumn.check() calls and their error-handling blocks, all autumn.track() calls, the Autumn API route (app/api/autumn/[...all]/route.ts), autumn.config.ts, and lib/autumn/get-paywall-texts.tsx. Dependencies autumn-js and atmn were removed from package.json. Handler logic (email send/reply, domain create/delete, webhook, check-dns, verifications, email-router) remains intact — only billing gates were removed. The guard feature in email-router was correctly simplified to `const guardFeatureEnabled = true`. getDomainStats limits were replaced with unlimited defaults. Two justified deviations: (1) generateAutumnBillingPortal and getAutumnCustomer were replaced with stub functions instead of deleted, because UI components still import them — the remove-autumn-ui feature handles their full removal. (2) lib/autumn/get-product-change-texts.tsx was replaced with a minimal stub instead of deleting the directory, since components/autumn/product-change-dialog.tsx imports it. Both deviations are well-reasoned given the two-feature split (backend then UI).",
+    "issues": [
+      {
+        "file": "lib/autumn/get-product-change-texts.tsx",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "Feature description says to 'Delete lib/autumn/ directory entirely' but a stub file remains. This is a justified deviation — the worker correctly identified that components/autumn/product-change-dialog.tsx imports this file, and deleting it would break tsc. The remove-autumn-ui feature is expected to clean this up."
+      },
+      {
+        "file": "app/actions/primary.ts",
+        "line": 70,
+        "severity": "non_blocking",
+        "description": "Feature description says to 'delete generateAutumnBillingPortal() and getAutumnCustomer() functions entirely' but stub functions were left. Again justified — UI components import these, and full deletion would break tsc until the UI removal feature runs."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The feature description contained conflicting requirements: 'delete lib/autumn/ directory entirely' AND 'tsc --noEmit passes'. These conflict when UI components import from lib/autumn/. The worker's deviation (keeping stubs) was the correct resolution. Mission AGENTS.md's 'Autumn Removal Strategy' section does document the general approach but doesn't explicitly address the stub pattern for cross-feature dependencies.",
+      "evidence": "Feature description says 'Delete lib/autumn/ directory entirely' and 'tsc --noEmit passes' in verificationSteps. Worker handoff explains: 'UI components (not in this feature's scope) import these functions. Full deletion caused tsc failures.'"
+    },
+    {
+      "area": "skills",
+      "observation": "Worker followed the refactor-worker skill procedure correctly. The skill's step 5 ('Handle Removals Carefully') aligns with what the worker did. The worker's skillFeedback correctly identified the conflicting requirements in the feature description.",
+      "evidence": "Handoff skillFeedback.followedProcedure: true. Deviation was justified: keeping stubs to maintain tsc compatibility."
+    },
+    {
+      "area": "conventions",
+      "observation": "Worker's verification showed tsc --noEmit exits with code 2 and lint exits with code 1, which was confirmed as pre-existing baseline behavior (same exit codes before the changes). This means the codebase has pre-existing type errors (from bun:test imports) and 329 lint errors that all workers will encounter. This is already known and documented as pre-existing.",
+      "evidence": "Handoff verification: 'Only pre-existing bun:test errors (3 test files). No new type errors introduced. Baseline also exits with code 2 for the same pre-existing errors.' and '329 errors, same count as baseline.'"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "The remove-autumn-backend feature was implemented correctly. All autumn-js imports, autumn.check() calls, autumn.track() calls, and the Autumn API route were removed from all specified handler files. The autumn.config.ts was deleted and autumn-js/atmn were removed from package.json. Handler logic remains intact with billing gates simply removed. Two minor, well-justified deviations: stub functions were kept for generateAutumnBillingPortal/getAutumnCustomer and a stub file kept in lib/autumn/ to maintain tsc compatibility until the companion remove-autumn-ui feature runs. No blocking issues found."
+}

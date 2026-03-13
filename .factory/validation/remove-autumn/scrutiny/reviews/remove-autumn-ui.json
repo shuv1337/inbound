@@ -1,0 +1,39 @@
+{
+  "featureId": "remove-autumn-ui",
+  "reviewedAt": "2026-03-13T08:05:00.000Z",
+  "commitId": "0c1721a",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Comprehensive removal of all Autumn UI integration across 27 files with 2,548 lines deleted and 42 added. All 11 tasks from the feature description were completed: (1) AutumnProvider removed from app/layout.tsx, (2) components/autumn/ directory deleted (4 files), (3) free-tier-paywall-modal.tsx deleted and removed from layout, (4) billing page replaced with self-hosted message, (5) settings page cleaned of all billing/plan/addon logic, (6) onboarding page cleaned of useCustomer and upgrade CTA, (7) guard page cleaned of access checks and paywall — now always accessible, (8) 8 content pages updated to import PricingTable from components/pricing-table, (9) nav-user.tsx cleaned — plan display replaced with 'Self-hosted', (10) pricing-table.tsx cleaned — autumn_id renamed to id, (11) marketing/pricing-interactive.tsx simplified — useCustomer and attach() removed. Additionally, generateAutumnBillingPortal and getAutumnCustomer stubs removed from primary.ts, and useCustomerQuery.ts and useBillingMutation.ts hooks deleted. The replacement code is clean and functional — billing page shows a simple self-hosted message, guard page renders rules without access gating, settings page retains profile/passkeys/signout, and pricing-interactive redirects to settings/billing instead of calling Autumn APIs.",
+    "issues": [
+      {
+        "file": "features/settings/types/index.ts",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "Leftover autumn-js import: `import { Customer } from 'autumn-js'` and `export type { Customer } from 'autumn-js'` on lines 1 and 4. The Customer type is not imported by any other file in the codebase (all consumers were deleted). This is dead code referencing the removed autumn-js package. While it won't cause runtime issues (type-only import), it's an incomplete cleanup. The feature scope says 'rg autumn app/ components/' should return zero — this file is in features/, which was outside the grep scope, so it technically passes the verification check but is still a leftover."
+      },
+      {
+        "file": "scripts/autumn-upgrade-analysis.ts",
+        "line": 1,
+        "severity": "non_blocking",
+        "description": "Standalone script in scripts/ still imports from autumn-js. This is outside the feature scope (app/ and components/) and likely belongs to a separate cleanup feature, but worth noting for completeness."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The feature verification scope uses 'rg autumn app/ components/' but there are autumn-js references in features/settings/types/index.ts (dead Customer type export). The verification grep misses the features/ directory. Future removal features should also search features/ and lib/ directories.",
+      "evidence": "features/settings/types/index.ts:1 — `import { Customer } from 'autumn-js'`. The feature's verificationSteps list `rg 'autumn' app/ components/ --glob '!*.test.ts' -l` which wouldn't catch this."
+    },
+    {
+      "area": "conventions",
+      "observation": "Worker used `npx tsc --noEmit` for typechecking (per services.yaml) which reported 3 pre-existing bun:test module errors and exited with code 2. The lint had 315 errors and 969 warnings, all pre-existing. This is a known baseline state — no new errors were introduced.",
+      "evidence": "Handoff verification: tsc exitCode 2 with only bun:test module errors; lint exitCode 1 with 315 errors (down from 329 baseline)."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "PASS. All 11 Autumn UI removal tasks were completed correctly. The AutumnProvider wrapper, components/autumn/ directory, free-tier-paywall-modal, billing hooks, and all autumn-related server actions were removed. All affected pages (billing, settings, onboarding, guard, 8 content pages, nav-user, pricing-table, pricing-interactive) were properly cleaned and compile without autumn imports. Two non-blocking issues noted: (1) dead Customer type export from autumn-js in features/settings/types/index.ts (outside the feature's stated grep scope), and (2) scripts/autumn-upgrade-analysis.ts still references autumn-js (outside feature scope). Neither blocks the feature's stated goals or validation assertions."
+}
