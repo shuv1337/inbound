@@ -10,9 +10,7 @@ export const authClient = createAuthClient({
 	baseURL:
 		typeof window !== "undefined"
 			? window.location.origin
-			: process.env.NODE_ENV === "development"
-				? "http://localhost:3000"
-				: "https://inbound.new",
+			: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 	plugins: [adminClient(), apiKeyClient(), magicLinkClient(), passkeyClient()],
 });
 

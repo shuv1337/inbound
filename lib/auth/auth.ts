@@ -8,6 +8,13 @@ import { and, eq } from "drizzle-orm";
 import Inbound from "inboundemail";
 
 import MagicLinkEmail from "@/emails/magic-link-email";
+import {
+	APP_URL,
+	NOTIFICATION_DOMAIN,
+	PASSKEY_ORIGIN,
+	PASSKEY_RP_ID,
+	SUPPORT_EMAIL,
+} from "@/lib/config/app-url";
 import { db } from "../db/index";
 import * as schema from "../db/schema";
 
@@ -62,11 +69,7 @@ const BLOCKED_SIGNUP_DOMAINS = [
 
 const inbound = new Inbound({
 	apiKey: process.env.INBOUND_API_KEY!,
-	// Use localhost in development, production URL otherwise
-	baseURL:
-		process.env.NODE_ENV === "development"
-			? "http://localhost:3000"
-			: undefined,
+	baseURL: process.env.INTERNAL_BASE_URL || APP_URL,
 });
 
 /**
@@ -100,24 +103,8 @@ async function isBlockedEmailDomain(email: string): Promise<boolean> {
 }
 
 export const auth = betterAuth({
-	baseURL:
-		process.env.NODE_ENV === "development"
-			? process.env.NEXT_PUBLIC_APP_URL
-			: process.env.VERCEL_ENV === "preview"
-				? `https://${process.env.VERCEL_BRANCH_URL}`
-				: "https://inbound.new",
-	trustedOrigins:
-		process.env.NODE_ENV === "development"
-			? [process.env.NEXT_PUBLIC_APP_URL as string, "http://localhost:3000"]
-			: ([
-					process.env.VERCEL_URL
-						? `https://${process.env.VERCEL_URL}`
-						: undefined,
-					process.env.VERCEL_BRANCH_URL
-						? `https://${process.env.VERCEL_BRANCH_URL}`
-						: undefined,
-					"https://inbound.new",
-				].filter(Boolean) as string[]),
+	baseURL: APP_URL,
+	trustedOrigins: [APP_URL, "http://localhost:3000"],
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: schema,
@@ -126,13 +113,13 @@ export const auth = betterAuth({
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			redirectURI: "https://inbound.new/api/auth/callback/github",
+			redirectURI: `${APP_URL}/api/auth/callback/github`,
 		},
 		google: {
 			prompt: "select_account",
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			redirectURI: "https://inbound.new/api/auth/callback/google",
+			redirectURI: `${APP_URL}/api/auth/callback/google`,
 		},
 	},
 	session: {
@@ -150,15 +137,8 @@ export const auth = betterAuth({
 	},
 	plugins: [
 		oAuthProxy({
-			productionURL: "https://inbound.new",
-			currentURL:
-				process.env.NODE_ENV === "development"
-					? (process.env.NEXT_PUBLIC_APP_URL as string)
-					: process.env.VERCEL_URL
-						? `https://${process.env.VERCEL_URL}`
-						: process.env.VERCEL_BRANCH_URL
-							? `https://${process.env.VERCEL_BRANCH_URL}`
-							: undefined,
+			productionURL: APP_URL,
+			currentURL: APP_URL,
 		}),
 		apiKey({
 			rateLimit: {
@@ -169,15 +149,9 @@ export const auth = betterAuth({
 		}),
 		admin(),
 		passkey({
-			rpID:
-				process.env.NODE_ENV === "development"
-					? (process.env.NEXT_PUBLIC_APP_URL as string)
-					: "inbound.new",
+			rpID: PASSKEY_RP_ID,
 			rpName: "Inbound",
-			origin:
-				process.env.NODE_ENV === "development"
-					? (process.env.NEXT_PUBLIC_APP_URL as string)
-					: "https://inbound.new",
+			origin: PASSKEY_ORIGIN,
 		}),
 		magicLink({
 			expiresIn: 300, // 5 minutes
@@ -188,12 +162,12 @@ export const auth = betterAuth({
 				try {
 					// Use Inbound SDK (throws on error)
 					const response = await inbound.emails.send({
-						from: "Inbound <noreply@notifications.inbound.new>",
+						from: `Inbound <noreply@notifications.${NOTIFICATION_DOMAIN}>`,
 						to: email,
 						subject: "Sign in to inbound",
 						html: await render(MagicLinkEmail(url)),
 						text: `Sign in to inbound\n\nClick this link to sign in: ${url}\n\nThis link will expire in 5 minutes.`,
-						reply_to: "support@inbound.new",
+						reply_to: SUPPORT_EMAIL || `support@${NOTIFICATION_DOMAIN}`,
 					});
 
 					console.log("✅ Magic link email sent successfully:", response.id);
