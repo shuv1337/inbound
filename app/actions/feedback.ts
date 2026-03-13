@@ -2,15 +2,11 @@
 
 import { LinearClient } from "@linear/sdk";
 import { render } from "@react-email/render";
-import Inbound from "inboundemail";
 import { headers } from "next/headers";
 import FeedbackEmail from "@/emails/feedback";
 import { auth } from "@/lib/auth/auth";
-
-// Initialize clients
-const inbound = new Inbound({
-	apiKey: process.env.INBOUND_API_KEY!,
-});
+import { getInboundClient } from "@/lib/inbound-client";
+const inbound = getInboundClient();
 const linear = process.env.LINEAR_API_KEY
 	? new LinearClient({
 			apiKey: process.env.LINEAR_API_KEY,

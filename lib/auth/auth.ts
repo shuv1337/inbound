@@ -5,8 +5,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
 import { admin, apiKey, magicLink, oAuthProxy } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
-import Inbound from "inboundemail";
-
 import MagicLinkEmail from "@/emails/magic-link-email";
 import {
 	APP_URL,
@@ -15,6 +13,7 @@ import {
 	PASSKEY_RP_ID,
 	SUPPORT_EMAIL,
 } from "@/lib/config/app-url";
+import { getInboundClient } from "@/lib/inbound-client";
 import { db } from "../db/index";
 import * as schema from "../db/schema";
 
@@ -67,10 +66,7 @@ const BLOCKED_SIGNUP_DOMAINS = [
 	"621688.xyz",
 ];
 
-const inbound = new Inbound({
-	apiKey: process.env.INBOUND_API_KEY!,
-	baseURL: process.env.INTERNAL_BASE_URL || APP_URL,
-});
+const inbound = getInboundClient();
 
 /**
  * Check if an email domain is blocked from signing up

@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import Inbound from "inboundemail";
+import { getInboundClient } from "@/lib/inbound-client";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth/auth";
 import { db } from "@/lib/db";
@@ -37,7 +37,7 @@ export const sendOnboardingDemo = new Elysia().post(
 		const userId = session.user.id;
 		console.log("✅ Session authenticated for userId:", userId);
 
-		const { apiKey, to } = body;
+		const { to } = body;
 
 		// Validate email format
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,15 +48,7 @@ export const sendOnboardingDemo = new Elysia().post(
 		}
 
 		try {
-			// Use the Inbound SDK to send the demo email
-			// Use localhost in development, production URL otherwise
-			const inbound = new Inbound({
-				apiKey,
-				baseURL:
-					process.env.NODE_ENV === "development"
-						? "http://localhost:3000"
-						: undefined,
-			});
+			const inbound = getInboundClient();
 
 			console.log("📤 Sending demo email to:", to);
 

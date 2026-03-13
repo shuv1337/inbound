@@ -3491,11 +3491,9 @@ export async function getEmailVolumeChartData(
 // THREADS WAITLIST
 // ============================================================================
 
-import Inbound from "inboundemail";
+import { getInboundClient } from "@/lib/inbound-client";
 
-const inbound = new Inbound({
-	apiKey: process.env.INBOUND_API_KEY!,
-});
+const inbound = getInboundClient();
 
 export interface ThreadsWaitlistData {
 	name: string;

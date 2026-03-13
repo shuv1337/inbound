@@ -1,15 +1,12 @@
 "use server";
 
 import { render } from "@react-email/components";
-import Inbound from "inboundemail";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import DnsSetupInstructionsEmail from "@/emails/dns-setup-instructions";
+import { getInboundClient } from "@/lib/inbound-client";
 
-// Initialize Inbound client
-const inbound = new Inbound({
-  apiKey: process.env.INBOUND_API_KEY!,
-});
+const inbound = getInboundClient();
 
 interface DnsRecord {
   type: "TXT" | "MX" | string;

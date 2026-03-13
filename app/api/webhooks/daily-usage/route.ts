@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import DailyUsageSummaryEmail from "@/emails/daily-usage-summary";
 import { render } from "@react-email/render";
-import Inbound from "inboundemail";
+import { getInboundClient } from "@/lib/inbound-client";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai/provider";
@@ -109,9 +109,7 @@ export async function GET() {
 		}),
 	);
 
-	const inbound = new Inbound({
-		apiKey: process.env.INBOUND_API_KEY!,
-	});
+	const inbound = getInboundClient();
 	const toEmail = process.env.USAGE_REPORT_TO || "ryan@inboundemail.com";
 	await inbound.emails.send({
 		from: "inbound reports <notifications@inbound.new>",

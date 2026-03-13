@@ -1,13 +1,9 @@
-import Inbound from "inboundemail";
 import { render } from "@react-email/render";
 import DomainVerifiedEmail from "@/emails/domain-verified";
 import LimitReachedEmail from "@/emails/limit-reached";
 import ReputationAlertEmail from "@/emails/reputation-alert";
+import { getInboundClient } from "@/lib/inbound-client";
 import { redis } from "@/lib/redis";
-
-const inbound = new Inbound({
-	apiKey: process.env.INBOUND_API_KEY!,
-});
 
 export interface DomainVerificationNotificationData {
 	userEmail: string;
@@ -90,7 +86,7 @@ export async function sendDomainVerificationNotification(
 		const fromWithName = `inbound support <${fromEmail}>`;
 
 		// Send the email
-		const response = await inbound.emails.send({
+		const response = await getInboundClient().emails.send({
 			from: fromWithName,
 			to: data.userEmail,
 			subject: `🎉 ${data.domain} has been successfully verified - inbound`,
@@ -275,7 +271,7 @@ export async function sendReputationAlertNotification(
 		const fromWithName = `Inbound Security <${fromEmail}>`;
 
 		// Send the email
-		const response = await inbound.emails.send({
+		const response = await getInboundClient().emails.send({
 			from: fromWithName,
 			to: data.userEmail,
 			subject: subject,
@@ -449,7 +445,7 @@ export async function sendLimitReachedNotification(
 		const fromWithName = `inbound alerts <${fromEmail}>`;
 
 		// Send the email
-		const response = await inbound.emails.send({
+		const response = await getInboundClient().emails.send({
 			from: fromWithName,
 			to: data.userEmail,
 			subject: subject,

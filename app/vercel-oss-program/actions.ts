@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import Inbound from "inboundemail";
+import { getInboundClient } from "@/lib/inbound-client";
 
 // Server action to submit Vercel OSS Program application
 export async function submitVercelOssApplication(formData: FormData) {
@@ -14,9 +14,7 @@ export async function submitVercelOssApplication(formData: FormData) {
       throw new Error("User not authenticated");
     }
 
-    const inbound = new Inbound({
-      apiKey: process.env.INBOUND_API_KEY!,
-    });
+    const inbound = getInboundClient();
     
     const response = await inbound.emails.send({
       from: 'Vercel OSS Program Applications<noreply@inbound.new>',
