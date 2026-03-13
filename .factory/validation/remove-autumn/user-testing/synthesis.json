@@ -1,0 +1,32 @@
+{
+  "milestone": "remove-autumn",
+  "round": 1,
+  "status": "fail",
+  "assertionsSummary": {
+    "total": 11,
+    "passed": 10,
+    "failed": 1,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-AUTUMN-001",
+    "VAL-AUTUMN-002",
+    "VAL-AUTUMN-003",
+    "VAL-AUTUMN-004",
+    "VAL-AUTUMN-006",
+    "VAL-AUTUMN-007",
+    "VAL-AUTUMN-008",
+    "VAL-AUTUMN-009",
+    "VAL-CROSS-004",
+    "VAL-CROSS-005"
+  ],
+  "failedAssertions": [
+    {
+      "id": "VAL-AUTUMN-005",
+      "reason": "lib/autumn/ directory still exists with get-product-change-texts.tsx stub file. The assertion requires dir-not-exists(lib/autumn/). The file contains a dead stub function that returns null values."
+    }
+  ],
+  "blockedAssertions": [],
+  "appliedUpdates": [],
+  "previousRound": null
+}
