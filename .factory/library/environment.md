@@ -17,6 +17,14 @@ Environment variables, external dependencies, and setup notes.
 - `CRON_SECRET` — Auth for cron webhook endpoints
 - `SUPPORT_EMAIL`, `LEGAL_EMAIL` — Configurable contact emails
 
+## DOCS_URL Dual Defaults
+
+`DOCS_URL` has two different default values in the codebase:
+- `next.config.ts` redirects: defaults to `https://inbound.mintlify.dev/docs` (external Mintlify docs)
+- `lib/config/app-url.ts`: defaults to `${APP_URL}/docs` (self-referential path)
+
+This is intentional — when `DOCS_URL` env var is not set, `app-url.ts` generates links pointing to `/docs` on the app itself, and `next.config.ts` redirects those to the Mintlify site. When `DOCS_URL` is set, both use the explicit value. Set `DOCS_URL` in production to avoid the redirect hop.
+
 ## External Dependencies (kept as-is)
 
 - **Upstash Redis** — REST-based, no local Redis needed

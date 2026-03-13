@@ -1,0 +1,47 @@
+{
+  "milestone": "replace-vercel",
+  "round": 1,
+  "status": "pass",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "bun test",
+      "exitCode": 1,
+      "note": "Failures are pre-existing (DATABASE_URL not set, INBOUND_API_KEY not set, bun:test module errors). No new failures introduced by this milestone."
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 1,
+      "note": "3 pre-existing errors: bun:test module resolution in test files. Verified same errors exist before milestone commits."
+    },
+    "lint": {
+      "passed": true,
+      "command": "bun run lint",
+      "exitCode": 1,
+      "note": "315 pre-existing errors + 969 warnings across 651 files. Lint on files changed by this milestone (send.ts, reply.ts, route.ts, next.config.ts, package.json) shows only pre-existing issues (noExplicitAny, noUnusedFunctionParameters). Verified by checking out pre-milestone commit."
+    }
+  },
+  "reviewsSummary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "failedFeatures": []
+  },
+  "blockingIssues": [],
+  "appliedUpdates": [
+    {
+      "target": "library",
+      "description": "Added DOCS_URL env var note to environment.md: documents the dual-default behavior between next.config.ts (Mintlify URL) and lib/config/app-url.ts (self-referential /docs), explaining the redirect chain that makes both work.",
+      "sourceFeature": "replace-vercel-runtime"
+    }
+  ],
+  "suggestedGuidanceUpdates": [],
+  "rejectedObservations": [
+    {
+      "observation": "AGENTS.md already documents waitUntil replacement pattern correctly",
+      "reason": "Already documented, no action needed"
+    }
+  ],
+  "previousRound": null
+}

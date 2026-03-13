@@ -1,0 +1,33 @@
+{
+  "featureId": "replace-vercel-runtime",
+  "reviewedAt": "2026-03-13T08:15:00.000Z",
+  "commitId": "afdcdd1",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "All 6 waitUntil call sites across 3 files were correctly replaced with fire-and-forget .catch() pattern. @vercel/functions was removed from all imports and package.json. /docs redirect is properly configured in next.config.ts with DOCS_URL env var support. No regressions detected in send/reply/webhook handlers. Error handling follows the specified pattern consistently. The lockfile was updated.",
+    "issues": [
+      {
+        "file": "next.config.ts",
+        "line": 5,
+        "severity": "non_blocking",
+        "description": "DOCS_URL default differs from lib/config/app-url.ts. next.config.ts defaults to 'https://inbound.mintlify.dev/docs' while app-url.ts defaults to '${APP_URL}/docs'. This is functionally fine (the redirect catches /docs and sends to Mintlify, so links generated via app-url.ts still work via the redirect chain), but the different defaults could cause confusion. When DOCS_URL env var IS set, both use the same value."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The AGENTS.md already documents the waitUntil replacement pattern under 'waitUntil Replacement' section with the exact .catch() pattern used. Convention was followed correctly.",
+      "evidence": "AGENTS.md 'waitUntil Replacement' section matches the pattern in send.ts:591, reply.ts:737, route.ts:490,853"
+    },
+    {
+      "area": "knowledge",
+      "observation": "DOCS_URL has two different default values in the codebase: next.config.ts defaults to 'https://inbound.mintlify.dev/docs' (the external Mintlify docs site) while lib/config/app-url.ts defaults to '${APP_URL}/docs' (the app's own /docs path). This works because the redirect catches the self-referential path, but it's an implicit coupling that could be documented in the library.",
+      "evidence": "next.config.ts:5 vs lib/config/app-url.ts:8 — different default values for DOCS_URL env var"
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Clean implementation. All 6 waitUntil calls replaced with fire-and-forget .catch() across send.ts, reply.ts, and route.ts (handleScheduledEmail + handleBatchEmail). @vercel/functions fully removed from imports and package.json. /docs and /docs/:path* redirects added to next.config.ts using DOCS_URL env var with Mintlify default. Lockfile updated. No new lint or typecheck errors introduced. Worker followed the refactor-worker skill procedure correctly."
+}
